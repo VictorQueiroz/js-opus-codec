@@ -46,7 +46,7 @@ onmessage = async (e: MessageEvent) => {
                 RequestResponseType<ICreateEncoder>
             > = {
                 requestId: req.requestId,
-                value: nextEncoderId++,
+                value: encoderId,
             };
             postMessage(response);
             break;
