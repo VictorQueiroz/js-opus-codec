@@ -9,7 +9,7 @@
         "webpack-cli": "5.x"
     },
     "name": "opus-codec",
-    "version": "0.0.19",
+    "version": "0.0.20",
     "license": "MIT",
     "files": [
         "{native,runtime,opus}/*.{d.ts,js,wasm}"
