@@ -652,10 +652,11 @@ node-releases@^2.0.8:
   integrity sha512-5GFldHPXVG/YZmFzJvKK2zDSzPKhEp0+ZR5SVaoSag9fsL5YgHbUHDfnG5494ISANDcK4KwPXAx2xqVEydmd7w==
 
 opus-codec@0.x:
-  version "0.0.7"
-  resolved "https://registry.yarnpkg.com/opus-codec/-/opus-codec-0.0.7.tgz#47d802d6e40d042d656c9ad7ee846737d6588119"
-  integrity sha512-HTqnQA+8rieeaq4TGgAnHazKryQwBxxl0BnhyLpI2YKwDXBmpA7pK6rPKfFzz7gWvUrSosWn1seVlLvLRvzURw==
+  version "0.0.27"
+  resolved "https://registry.yarnpkg.com/opus-codec/-/opus-codec-0.0.27.tgz#17571a8ab7c6257a39748cb9c3251978eccecbab"
+  integrity sha512-ZaN8r1f+fjij6S1NvhlDcu5jAu+5UZdzcxn6zJB8FlfhRTOILmdntVD1ZIQoIDSBmtMd8xzoOum7DtJKMrxWPg==
   dependencies:
+    autobind-decorator "^2.4.0"
     opus-codec "0.x"
 
 p-limit@^2.2.0:
