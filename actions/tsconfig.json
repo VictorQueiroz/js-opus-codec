@@ -1,0 +1,7 @@
+{
+    "extends": "../tsconfig.base.json",
+    "compilerOptions": {
+        "lib": ["ESNext", "WebWorker"]
+    },
+    "include": ["index.ts", "Client.ts", "actions.ts"]
+}
