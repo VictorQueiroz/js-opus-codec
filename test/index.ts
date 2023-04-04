@@ -1,8 +1,8 @@
-import native from "../native";
-import Runtime from "../runtime/Runtime";
-import assert from "assert";
-import child_process from "child_process";
-import { Encoder, Decoder, RingBuffer } from "../opus";
+import native from '../native';
+import Runtime from '../runtime/Runtime';
+import assert from 'assert';
+import child_process from 'child_process';
+import { Encoder, Decoder, RingBuffer } from '../opus';
 
 async function createRuntime() {
     return new Runtime(await native());
@@ -27,27 +27,27 @@ async function testEncoderOpusEncoding() {
     const frameSizeInBytes =
         frameSizeInSamples * Float32Array.BYTES_PER_ELEMENT;
     const enc = new Encoder(runtime, 48000, 1, 2048, 10000, frameSizeInBytes);
-    const pcm = child_process.spawn("arecord", [
-        "-r",
-        "48000",
-        "-f",
-        "FLOAT_LE",
-        "-d",
-        "4",
+    const pcm = child_process.spawn('arecord', [
+        '-r',
+        '48000',
+        '-f',
+        'FLOAT_LE',
+        '-d',
+        '4',
         `--buffer-size=${frameSizeInBytes}`,
     ]);
     const dec = new Decoder(runtime, 48000, 1, frameSizeInSamples);
-    const aplay = child_process.spawn("aplay", [
-        "-f",
-        "FLOAT_LE",
-        "-r",
-        "48000",
-        "-c",
-        "1",
-        "-i",
+    const aplay = child_process.spawn('aplay', [
+        '-f',
+        'FLOAT_LE',
+        '-r',
+        '48000',
+        '-c',
+        '1',
+        '-i',
     ]);
     const ringBuffer = new RingBuffer(frameSizeInSamples);
-    pcm.stdout.on("data", (chunk) => {
+    pcm.stdout.on('data', (chunk) => {
         assert.strict.ok(Buffer.isBuffer(chunk));
         const buffer = new Float32Array(chunk.buffer);
         ringBuffer.write(buffer);
@@ -72,7 +72,7 @@ async function testEncoderOpusEncoding() {
             )
         );
     });
-    pcm.stdout.on("end", () => {
+    pcm.stdout.on('end', () => {
         aplay.stdin.end();
     });
 }
@@ -83,6 +83,13 @@ async function testRingBuffer() {
     assert.strict.equal(ringBuffer.read(), null);
     ringBuffer.write(new Float32Array(880));
     assert.strict.deepEqual(ringBuffer.read(), new Float32Array(2880));
+    assert.strict.equal(ringBuffer.read(), null);
+    ringBuffer.write(new Float32Array(2000).fill(0.75));
+    ringBuffer.write(new Float32Array(880).fill(0.75));
+    assert.strict.deepEqual(
+        ringBuffer.read(),
+        new Float32Array(2880).fill(0.75)
+    );
 }
 
 (async () => {
