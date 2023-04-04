@@ -70,6 +70,7 @@ function runCommand(
         'tsc',
         '-b',
         path.resolve(__dirname, '../worker'),
+        path.resolve(__dirname, '../worklet'),
         path.resolve(__dirname, '../webpack'),
         path.resolve(__dirname, '../actions'),
         '--force',
