@@ -1,7 +1,3 @@
-declare const console: {
-    log: (...args: any[]) => void;
-};
-
 export default class RingBuffer {
     #arrayBuffer;
     #readOffset;
@@ -23,7 +19,6 @@ export default class RingBuffer {
     }
     public read(): Float32Array | null {
         const remainingBytes = this.#writeOffset - this.#readOffset;
-        console.log(remainingBytes, this.#frameSize);
         if (remainingBytes >= this.#frameSize) {
             const view = this.#view().subarray(
                 this.#readOffset,
