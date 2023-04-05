@@ -15,6 +15,15 @@ export default class Client {
         this.#worker = worker;
         worker.addEventListener('message', this.onMessage);
     }
+    public close() {
+        this.#worker.terminate();
+        for (const p of this.#pending) {
+            p[1]({
+                requestId: p[0],
+                failures: ['Worker destroyed'],
+            });
+        }
+    }
     public sendMessage<T extends IWorkerRequest<unknown, unknown>>(data: T) {
         return new Promise<RequestResponse<RequestResponseType<T>>>(
             (resolve, reject) => {
