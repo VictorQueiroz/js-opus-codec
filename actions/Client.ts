@@ -14,6 +14,8 @@ export default class Client {
     public constructor(worker: Worker) {
         this.#worker = worker;
         worker.addEventListener('message', this.onMessage);
+        worker.addEventListener('messageerror', this.onMessageError);
+        worker.addEventListener('error', this.onError);
     }
     public close() {
         this.#worker.terminate();
@@ -47,6 +49,12 @@ export default class Client {
             });
             this.#worker.postMessage(data);
         });
+    }
+    @boundMethod private onMessageError(e: MessageEvent) {
+        console.error(e);
+    }
+    @boundMethod private onError(e: ErrorEvent) {
+        console.error(e);
     }
     @boundMethod private onMessage(e: MessageEvent) {
         const data = e.data as RequestResponse<unknown>;
