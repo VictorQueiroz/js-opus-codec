@@ -26,20 +26,27 @@ export default class Client {
         }
     }
     public sendMessage<T extends IWorkerRequest<unknown, unknown>>(data: T) {
-        return new Promise<RequestResponse<RequestResponseType<T>>>(
-            (resolve, reject) => {
-                if (this.#pending.has(data.requestId)) {
-                    reject(
-                        new Error(`Request already exists: ${data.requestId}`)
-                    );
-                    return;
-                }
-                this.#pending.set(data.requestId, (data) => {
-                    resolve(data as RequestResponse<RequestResponseType<T>>);
-                });
-                this.#worker.postMessage(data);
+        const waitTimeBeforeResolvingAutomaticallyInMilliseconds = 10000;
+        type Response = RequestResponse<RequestResponseType<T>>;
+        return new Promise<Response>((resolve, reject) => {
+            if (this.#pending.has(data.requestId)) {
+                reject(new Error(`Request already exists: ${data.requestId}`));
+                return;
             }
-        );
+            const timeoutId = setTimeout(() => {
+                resolve({
+                    requestId: data.requestId,
+                    failures: [
+                        `Timeout expired. It took more than ${waitTimeBeforeResolvingAutomaticallyInMilliseconds} to resolve this request.`,
+                    ],
+                });
+            }, waitTimeBeforeResolvingAutomaticallyInMilliseconds);
+            this.#pending.set(data.requestId, (data) => {
+                clearTimeout(timeoutId);
+                resolve(data as Response);
+            });
+            this.#worker.postMessage(data);
+        });
     }
     @boundMethod private onMessage(e: MessageEvent) {
         const data = e.data as RequestResponse<unknown>;
