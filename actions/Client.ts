@@ -18,6 +18,7 @@ export default class Client {
     public close() {
         this.#worker.terminate();
         for (const p of this.#pending) {
+            this.#pending.delete(p[0]);
             p[1]({
                 requestId: p[0],
                 failures: ['Worker destroyed'],
