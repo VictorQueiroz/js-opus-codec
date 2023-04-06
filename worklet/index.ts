@@ -59,6 +59,12 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
             const samples = this.ringBuffer.read();
 
             if (samples) {
+                if (debug) {
+                    console.log(
+                        'read %d samples out from ring buffer',
+                        samples.length
+                    );
+                }
                 this.port.postMessage({
                     samples,
                 });
