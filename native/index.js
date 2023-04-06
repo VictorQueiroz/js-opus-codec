@@ -27,7 +27,7 @@ Module['ready'] = new Promise(function(resolve, reject) {
   readyPromiseResolve = resolve;
   readyPromiseReject = reject;
 });
-["_size_of_int","_size_of_void_ptr","_malloc","_free","_opus_decoder_create","_opus_decoder_destroy","_opus_decode_float","_opus_encoder_create","_opus_encoder_destroy","_opus_encode_float","_fflush","onRuntimeInitialized"].forEach((prop) => {
+["_size_of_int","_size_of_void_ptr","_malloc","_free","_opus_decoder_create","_opus_decoder_destroy","_opus_decode_float","_opus_encoder_create","_opus_encoder_destroy","_opus_encoder_ctl","_opus_encode_float","_fflush","onRuntimeInitialized"].forEach((prop) => {
   if (!Object.getOwnPropertyDescriptor(Module['ready'], prop)) {
     Object.defineProperty(Module['ready'], prop, {
       get: () => abort('You are getting ' + prop + ' on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js'),
@@ -1372,6 +1372,8 @@ var _opus_decoder_destroy = Module["_opus_decoder_destroy"] = createExportWrappe
 var _opus_encoder_create = Module["_opus_encoder_create"] = createExportWrapper("opus_encoder_create");
 /** @type {function(...*):?} */
 var _opus_encode_float = Module["_opus_encode_float"] = createExportWrapper("opus_encode_float");
+/** @type {function(...*):?} */
+var _opus_encoder_ctl = Module["_opus_encoder_ctl"] = createExportWrapper("opus_encoder_ctl");
 /** @type {function(...*):?} */
 var _opus_encoder_destroy = Module["_opus_encoder_destroy"] = createExportWrapper("opus_encoder_destroy");
 /** @type {function(...*):?} */

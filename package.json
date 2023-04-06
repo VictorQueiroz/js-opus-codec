@@ -1,6 +1,8 @@
 {
     "devDependencies": {
         "@types/node": "14.x",
+        "cxx-parser": "0.x",
+        "glob": "9.x",
         "prettier": "2.x",
         "ts-loader": "9.x",
         "ts-node": "10.x",

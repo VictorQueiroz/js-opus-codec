@@ -35,32 +35,36 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
         parameters: Record<string, Float32Array>
     ) {
         const frameSize = parameters['frameSize'][0];
-        const debug = parameters['frameSize'][0] ? true : false;
+        const debug = parameters['debug'][0] ? true : false;
         if (!this.ringBuffer) {
             this.ringBuffer = new RingBuffer(frameSize);
         }
 
-        // if(debug){
-        //     console.log('writing %d samples to ring buffer',inputList[0][0].length);
-        // }
-
-        this.ringBuffer.write(inputList[0][0]);
-
-        const samples = this.ringBuffer.read();
-        if (!samples) {
+        if (!inputList.length) {
+            console.error('no data available in input list: %o', inputList);
             return true;
         }
 
-        if (debug) {
-            console.log(
-                'read %d samples out from ring buffer',
-                inputList[0][0].length
-            );
-        }
+        for (const inputChannel of inputList) {
+            if (!inputChannel.length) {
+                console.error(
+                    'channel available, but no data: %o',
+                    inputChannel
+                );
+                break;
+            }
 
-        this.port.postMessage({
-            samples,
-        });
+            this.ringBuffer.write(inputChannel[0]);
+
+            const samples = this.ringBuffer.read();
+
+            if (samples) {
+                this.port.postMessage({
+                    samples,
+                });
+            }
+            break;
+        }
         return true;
     }
 }

@@ -44,6 +44,7 @@ function runCommand(
         '_opus_decode_float',
         '_opus_encoder_create',
         '_opus_encoder_destroy',
+        '_opus_encoder_ctl',
         '_opus_encode_float',
     ];
     const emscriptenArgs = [
