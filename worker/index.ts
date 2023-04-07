@@ -7,6 +7,7 @@ import {
     RequestType,
     RequestResponseType,
     WorkerRequest,
+    EncoderId,
 } from '../actions/actions';
 import native from 'opus-codec/native';
 import { Runtime } from 'opus-codec/runtime';
@@ -14,12 +15,15 @@ import { Runtime } from 'opus-codec/runtime';
 const pendingRuntime = native({
     locateFile: () => '/opus/index.wasm',
 });
-let nextEncoderId = 0;
-const encoders = new Map<number, IEncoderInstance>();
+const encoders = new Map<EncoderId, IEncoderInstance>();
 
 interface IEncoderInstance {
     encoder: Encoder;
     ringBuffer: RingBuffer;
+}
+
+function generateEncoderId() {
+    return crypto.getRandomValues(new Uint32Array(4)).join('-');
 }
 
 onmessage = async (e: MessageEvent) => {
@@ -35,7 +39,7 @@ onmessage = async (e: MessageEvent) => {
                 req.data.outBufferLength,
                 req.data.pcmBufferLength
             );
-            const encoderId = nextEncoderId++;
+            const encoderId = generateEncoderId();
             encoders.set(encoderId, {
                 ringBuffer: new RingBuffer(
                     req.data.pcmBufferLength / Float32Array.BYTES_PER_ELEMENT
@@ -69,7 +73,7 @@ onmessage = async (e: MessageEvent) => {
             break;
         }
         case RequestType.EncodeFloat: {
-            const encoderInstance = encoders.get(req.data.encoder);
+            const encoderInstance = encoders.get(req.data.encoderId);
             if (!encoderInstance) {
                 throw new Error('Failed to get encoder');
             }
