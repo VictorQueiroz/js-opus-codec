@@ -4,5 +4,5 @@
         "lib": ["ESNext", "WebWorker"],
         "types": []
     },
-    "include": ["index.ts", "Client.ts", "actions.ts"]
+    "include": ["index.ts", "opus.ts", "Client.ts", "actions.ts"]
 }

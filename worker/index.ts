@@ -8,9 +8,12 @@ import {
     RequestResponseType,
     WorkerRequest,
     EncoderId,
+    IOpusSetRequest,
+    IOpusGetRequest,
 } from '../actions/actions';
 import native from 'opus-codec/native';
 import { Runtime } from 'opus-codec/runtime';
+import { getFromEncoder, setToEncoder } from './opus';
 
 const pendingRuntime = native({
     locateFile: () => '/opus/index.wasm',
@@ -55,6 +58,8 @@ onmessage = async (e: MessageEvent) => {
             postMessage(response);
             break;
         }
+        case RequestType.OpusGetRequest:
+            break;
         case RequestType.DestroyEncoder: {
             const encoderInstance = encoders.get(req.data);
             if (!encoderInstance) {
@@ -106,6 +111,38 @@ onmessage = async (e: MessageEvent) => {
                     .subarray(0, encodedSampleCount)
             );
             postMessage(response, [response.value.encoded]);
+            break;
+        }
+        case RequestType.OpusSetRequest: {
+            const encoderInstance = encoders.get(req.data.encoderId);
+            const response: RequestResponse<
+                RequestResponseType<IOpusSetRequest>
+            > = encoderInstance?.encoder
+                ? {
+                      value: setToEncoder(encoderInstance.encoder, req.data),
+                      requestId: req.requestId,
+                  }
+                : {
+                      requestId: req.requestId,
+                      failures: [`no encoder found for: ${req.data.encoderId}`],
+                  };
+            postMessage(response);
+            break;
+        }
+        case RequestType.OpusGetRequest: {
+            const encoderInstance = encoders.get(req.data.encoderId);
+            const response: RequestResponse<
+                RequestResponseType<IOpusGetRequest>
+            > = encoderInstance?.encoder
+                ? {
+                      value: getFromEncoder(encoderInstance.encoder, req.data),
+                      requestId: req.requestId,
+                  }
+                : {
+                      requestId: req.requestId,
+                      failures: [`no encoder found for: ${req.data.encoderId}`],
+                  };
+            postMessage(response);
             break;
         }
     }

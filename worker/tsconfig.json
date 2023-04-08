@@ -4,6 +4,6 @@
         "lib": ["ESNext", "WebWorker"],
         "types": []
     },
-    "include": ["index.ts"],
+    "include": ["index.ts", "opus.ts"],
     "references": [{ "path": "../actions" }]
 }

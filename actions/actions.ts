@@ -1,3 +1,5 @@
+import { OpusGetRequest, OpusSetRequest } from './opus';
+
 export interface IWorkerRequest<Data, Response> {
     data: Data;
     _response?: RequestResponse<Response>;
@@ -27,6 +29,32 @@ export interface ICreateEncoderOptions {
     pcmBufferLength: number;
 }
 
+export interface IOpusGetRequest
+    extends IWorkerRequest<OpusGetRequest, number> {
+    type: RequestType.OpusGetRequest;
+}
+
+export function getFromEncoder(data: OpusGetRequest): IOpusGetRequest {
+    return {
+        type: RequestType.OpusGetRequest,
+        data,
+        requestId: getRequestId(),
+    };
+}
+
+export interface IOpusSetRequest
+    extends IWorkerRequest<OpusSetRequest, boolean> {
+    type: RequestType.OpusSetRequest;
+}
+
+export function setToEncoder(data: OpusSetRequest): IOpusSetRequest {
+    return {
+        type: RequestType.OpusSetRequest,
+        data,
+        requestId: getRequestId(),
+    };
+}
+
 export interface ICreateEncoder
     extends IWorkerRequest<ICreateEncoderOptions, EncoderId> {
     type: RequestType.CreateEncoder;
@@ -52,6 +80,8 @@ export enum RequestType {
     CreateEncoder,
     EncodeFloat,
     DestroyEncoder,
+    OpusGetRequest,
+    OpusSetRequest,
 }
 
 export interface IEncodeFloatResult {
@@ -74,7 +104,12 @@ export type RequestResponseType<T> = T extends IWorkerRequest<unknown, infer R>
     ? R
     : never;
 
-export type WorkerRequest = IEncodeFloat | ICreateEncoder | IDestroyEncoder;
+export type WorkerRequest =
+    | IEncodeFloat
+    | ICreateEncoder
+    | IDestroyEncoder
+    | IOpusGetRequest
+    | IOpusSetRequest;
 
 function getRequestId() {
     const ids = crypto.getRandomValues(new Int32Array(4));

@@ -407,6 +407,159 @@ const opusGettersAndSettersArgumentTypes = new Map<
     ],
     ['OPUS_GET_PITCH', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
 ]);
+
+async function generateWorkerActions() {
+    const cs = new CodeStream();
+    const getEnumName = (value: string) =>
+        upperFirst(camelCase(value.replace(/^OPUS_/, '')));
+    cs.write(
+        `export enum OpusRequest {\n`,
+        () => {
+            for (const v of opusGettersAndSetters) {
+                cs.write(`${getEnumName(v[0])} = '${v[0]}',\n`);
+            }
+        },
+        '}\n'
+    );
+    const getInterfaceNames = new Set<string>();
+    const setInterfaceNames = new Set<string>();
+    for (const v of opusGettersAndSetters) {
+        // cs.write(`export interface `)
+        const interfaceName = `I${upperFirst(camelCase(v[0]))}`;
+        const isGetter = v[0].startsWith('OPUS_GET_');
+        if (isGetter) {
+            getInterfaceNames.add(interfaceName);
+        } else {
+            setInterfaceNames.add(interfaceName);
+        }
+        cs.write(
+            `export interface ${interfaceName} {\n`,
+            () => {
+                cs.write(`type: OpusRequest.${getEnumName(v[0])};\n`);
+                cs.write('encoderId: string;\n');
+                if (!isGetter) {
+                    cs.write(`value: number;\n`);
+                }
+            },
+            '}\n'
+        );
+        cs.write(
+            `export function ${v[0]}(encoderId: string,${
+                isGetter
+                    ? ''
+                    : v[1].arguments.map((a) => `${a}: number`).join(', ')
+            }): ${interfaceName} {\n`,
+            () => {
+                cs.write(
+                    `return {\n`,
+                    () => {
+                        cs.write('encoderId,\n');
+                        cs.write(`type: OpusRequest.${getEnumName(v[0])},\n`);
+                        if (!isGetter) {
+                            cs.write(`value: x\n`);
+                        }
+                    },
+                    '};\n'
+                );
+            },
+            '}\n'
+        );
+    }
+    cs.write(
+        `export type OpusGetRequest = ${[...getInterfaceNames].join(' | ')};\n`
+    );
+    cs.write(
+        `export type OpusSetRequest = ${[...setInterfaceNames].join(' | ')};\n`
+    );
+    await fs.promises.writeFile(
+        path.resolve(__dirname, '../actions/opus.ts'),
+        cs.value()
+    );
+
+    cs.write(
+        `import {OpusGetRequest,OpusRequest,OpusSetRequest} from '../actions/opus';\n`
+    );
+    cs.write(`import {Encoder} from 'opus-codec/opus';\n`);
+    cs.write(
+        `export function setToEncoder(encoder: Encoder, request: OpusSetRequest){\n`,
+        () => {
+            cs.write('let result: boolean;\n');
+            cs.write(
+                `switch(request.type) {\n`,
+                () => {
+                    for (const v of opusGettersAndSetters) {
+                        if (!v[0].startsWith('OPUS_SET_')) continue;
+                        cs.write(`case OpusRequest.${getEnumName(v[0])}:\n`);
+                        cs.indentBlock(() => {
+                            cs.write(
+                                `result = encoder.${getOpusRequestName(
+                                    v[0]
+                                )}(request.value);\n`
+                            );
+                            cs.write('break;\n');
+                        });
+                    }
+                },
+                '}\n'
+            );
+            cs.write('return result;\n');
+        },
+        '}\n'
+    );
+    cs.write(
+        `export function getFromEncoder(encoder: Encoder, request: OpusGetRequest){\n`,
+        () => {
+            cs.write('let result: number;\n');
+            cs.write(
+                `switch(request.type) {\n`,
+                () => {
+                    for (const v of opusGettersAndSetters) {
+                        if (!v[0].startsWith('OPUS_GET_')) continue;
+                        cs.write(`case OpusRequest.${getEnumName(v[0])}:\n`);
+                        cs.indentBlock(() => {
+                            cs.write(
+                                `result = encoder.${getOpusRequestName(
+                                    v[0]
+                                )}();\n`
+                            );
+                            cs.write('break;\n');
+                        });
+                    }
+                },
+                '}\n'
+            );
+            cs.write('return result;\n');
+        },
+        '}\n'
+    );
+    await fs.promises.writeFile(
+        path.resolve(__dirname, '../worker/opus.ts'),
+        cs.value()
+    );
+}
+
+function lowerFirst(v: string) {
+    return `${v[0]?.toLowerCase()}${v.substring(1)}`;
+}
+function upperFirst(v: string) {
+    return `${v[0]?.toUpperCase()}${v.substring(1)}`;
+}
+function camelCase(value: string) {
+    return value
+        .replace(/([a-zA-Z]+)_([a-zA-Z]+)/g, (_, a: string, b: string) => {
+            return `${lowerFirst(a.toLowerCase())}${upperFirst(
+                b.toLowerCase()
+            )}`;
+        })
+        .replace(/_([a-zA-Z]+)/g, (_, a: string) =>
+            upperFirst(a.toLowerCase())
+        );
+}
+
+function getOpusRequestName(name: string) {
+    return camelCase(name.replace(/^OPUS_/, ''));
+}
+
 async function generateOpusGettersAndSettersClass() {
     const cs = new CodeStream();
     cs.write(`import {Runtime/*,Pointer*/,Integer} from '../runtime';\n`);
@@ -431,25 +584,7 @@ async function generateOpusGettersAndSettersClass() {
                 '}\n'
             );
             for (const v of opusGettersAndSetters) {
-                function lowerFirst(v: string) {
-                    return `${v[0]?.toLowerCase()}${v.substring(1)}`;
-                }
-                function upperFirst(v: string) {
-                    return `${v[0]?.toUpperCase()}${v.substring(1)}`;
-                }
-                let name = v[0]
-                    .replace(/^OPUS_/, '')
-                    .replace(
-                        /([a-zA-Z]+)_([a-zA-Z]+)/g,
-                        (_, a: string, b: string) => {
-                            return `${lowerFirst(a.toLowerCase())}${upperFirst(
-                                b.toLowerCase()
-                            )}`;
-                        }
-                    )
-                    .replace(/_([a-zA-Z]+)/g, (_, a: string) =>
-                        upperFirst(a.toLowerCase())
-                    );
+                const name = getOpusRequestName(v[0]);
                 const args = `${v[1].arguments
                     .map((c) => `${c}: number`)
                     .join(', ')}`;
@@ -495,6 +630,7 @@ async function generateOpusGettersAndSettersClass() {
     for (const arg of process.argv) {
         switch (arg) {
             case '-g':
+                await generateWorkerActions();
                 await generateOpusGettersAndSettersClass();
                 await generateOpusConstantsTsFile();
                 await generateOpusGettersAndSetters();
