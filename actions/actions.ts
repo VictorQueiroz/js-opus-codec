@@ -153,7 +153,16 @@ export function decodeFloat(data: IDecodeFloatOptions): IDecodeFloat {
 }
 
 export interface IEncodeFloatResult {
-    encoded: ArrayBuffer | null;
+    /**
+     * if null, it means the data was written to the ring buffer, but not yet submitted
+     */
+    encoded: {
+        buffer: ArrayBuffer;
+        /**
+         * duration in milliseconds
+         */
+        duration: number;
+    } | null;
 }
 
 export interface IEncodeFloat

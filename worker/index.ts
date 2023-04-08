@@ -27,6 +27,7 @@ const decoders = new Map<CodecId, Decoder>();
 interface IEncoderInstance {
     encoder: Encoder;
     ringBuffer: RingBuffer;
+    sampleRate: number;
 }
 
 function generateCodecId() {
@@ -48,6 +49,7 @@ onmessage = async (e: MessageEvent) => {
             );
             const encoderId = generateCodecId();
             encoders.set(encoderId, {
+                sampleRate: req.data.sampleRate,
                 ringBuffer: new RingBuffer(
                     req.data.pcmBufferLength / Float32Array.BYTES_PER_ELEMENT
                 ),
@@ -139,15 +141,16 @@ onmessage = async (e: MessageEvent) => {
             encoderInstance.ringBuffer.write(req.data.pcm);
 
             const samples = encoderInstance.ringBuffer.read();
-            const response: RequestResponse<RequestResponseType<IEncodeFloat>> =
-                {
+
+            if (samples === null) {
+                const response: RequestResponse<
+                    RequestResponseType<IEncodeFloat>
+                > = {
                     requestId: req.requestId,
                     value: {
                         encoded: null,
                     },
                 };
-
-            if (samples === null) {
                 postMessage(response);
                 return;
             }
@@ -157,13 +160,24 @@ onmessage = async (e: MessageEvent) => {
                 req.data.frameSize,
                 req.data.maxDataBytes
             );
-            response.value.encoded = new ArrayBuffer(encodedSampleCount);
-            new Uint8Array(response.value.encoded).set(
+            const encoded = {
+                buffer: new ArrayBuffer(encodedSampleCount),
+                duration: encodedSampleCount / encoderInstance.sampleRate,
+            };
+            const response: RequestResponse<RequestResponseType<IEncodeFloat>> =
+                {
+                    requestId: req.requestId,
+                    value: {
+                        encoded,
+                    },
+                };
+
+            new Uint8Array(encoded.buffer).set(
                 encoderInstance.encoder
                     .encoded()
                     .subarray(0, encodedSampleCount)
             );
-            postMessage(response, [response.value.encoded]);
+            postMessage(response, [encoded.buffer]);
             break;
         }
         case RequestType.DecodeFloat: {
