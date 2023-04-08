@@ -58,8 +58,6 @@ onmessage = async (e: MessageEvent) => {
             postMessage(response);
             break;
         }
-        case RequestType.OpusGetRequest:
-            break;
         case RequestType.DestroyEncoder: {
             const encoderInstance = encoders.get(req.data);
             if (!encoderInstance) {
