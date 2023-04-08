@@ -7,7 +7,7 @@ export interface IWorkerRequest<Data, Response> {
     requestId: RequestId;
 }
 
-export type EncoderId = string;
+export type CodecId = string;
 
 export type RequestResponse<T> =
     | {
@@ -56,19 +56,46 @@ export function setToEncoder(data: OpusSetRequest): IOpusSetRequest {
 }
 
 export interface ICreateEncoder
-    extends IWorkerRequest<ICreateEncoderOptions, EncoderId> {
+    extends IWorkerRequest<ICreateEncoderOptions, CodecId> {
     type: RequestType.CreateEncoder;
 }
 
-export interface IDestroyEncoderOptions {
-    encoderId: EncoderId;
+export interface ICreateDecoderOptions {
+    sampleRate: number;
+    channels: number;
+    frameSize: number;
 }
 
-export interface IDestroyEncoder extends IWorkerRequest<EncoderId, EncoderId> {
+export interface ICreateDecoder
+    extends IWorkerRequest<ICreateDecoderOptions, CodecId> {
+    type: RequestType.CreateDecoder;
+}
+
+export function createDecoder(
+    sampleRate: number,
+    channels: number,
+    frameSize: number
+): ICreateDecoder {
+    return {
+        type: RequestType.CreateDecoder,
+        data: {
+            frameSize,
+            sampleRate,
+            channels,
+        },
+        requestId: getRequestId(),
+    };
+}
+
+export interface IDestroyEncoderOptions {
+    encoderId: CodecId;
+}
+
+export interface IDestroyEncoder extends IWorkerRequest<CodecId, CodecId> {
     type: RequestType.DestroyEncoder;
 }
 
-export function destroyEncoder(encoderId: EncoderId): IDestroyEncoder {
+export function destroyEncoder(encoderId: CodecId): IDestroyEncoder {
     return {
         type: RequestType.DestroyEncoder,
         data: encoderId,
@@ -78,10 +105,51 @@ export function destroyEncoder(encoderId: EncoderId): IDestroyEncoder {
 
 export enum RequestType {
     CreateEncoder,
+    CreateDecoder,
     EncodeFloat,
+    DecodeFloat,
     DestroyEncoder,
+    DestroyDecoder,
     OpusGetRequest,
     OpusSetRequest,
+}
+
+export interface IDestroyDecoder
+    extends IWorkerRequest<{ decoderId: CodecId }, boolean> {
+    type: RequestType.DestroyDecoder;
+}
+
+export function destroyDecoder(decoderId: CodecId): IDestroyDecoder {
+    return {
+        type: RequestType.DestroyDecoder,
+        data: {
+            decoderId,
+        },
+        requestId: getRequestId(),
+    };
+}
+
+export interface IDecodeFloatOptions {
+    decoderId: CodecId;
+    decodeFec?: number;
+    encoded: ArrayBuffer;
+}
+export interface IDecodeFloatResult {
+    decoded: ArrayBuffer;
+}
+
+export interface IDecodeFloat
+    extends IWorkerRequest<IDecodeFloatOptions, IDecodeFloatResult> {
+    type: RequestType.DecodeFloat;
+}
+
+export function decodeFloat(data: IDecodeFloatOptions): IDecodeFloat {
+    return {
+        type: RequestType.DecodeFloat,
+        data,
+        requestId: getRequestId(),
+        transfer: [data.encoded],
+    };
 }
 
 export interface IEncodeFloatResult {
@@ -95,7 +163,7 @@ export interface IEncodeFloat
 
 export interface IEncodeFloatOptions {
     pcm: Float32Array;
-    encoderId: EncoderId;
+    encoderId: CodecId;
     frameSize: number;
     maxDataBytes: number;
 }
@@ -107,6 +175,9 @@ export type RequestResponseType<T> = T extends IWorkerRequest<unknown, infer R>
 export type WorkerRequest =
     | IEncodeFloat
     | ICreateEncoder
+    | ICreateDecoder
+    | IDestroyDecoder
+    | IDecodeFloat
     | IDestroyEncoder
     | IOpusGetRequest
     | IOpusSetRequest;
