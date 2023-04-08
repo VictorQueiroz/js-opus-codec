@@ -1,7 +1,7 @@
-import { Runtime, Integer, Pointer, ResourcesHolder, Buffer } from "../runtime";
+import { Runtime, Integer, ResourcesHolder, Buffer } from '../runtime';
+import { OpusGettersAndSetters } from './OpusGettersAndSetters';
 
-export default class Encoder {
-    readonly #errorPointer;
+export default class Encoder extends OpusGettersAndSetters {
     readonly #error;
     readonly #runtime;
     readonly #encoder;
@@ -22,13 +22,20 @@ export default class Encoder {
          */
         pcmBufferLength: number
     ) {
-        if (!outBufferLength) {
-            throw new Error("outBufferLength must be more than 0");
-        }
+        const error = new Integer(runtime);
+        const encoderId = runtime
+            .originalRuntime()
+            ._opus_encoder_create(
+                sampleRate,
+                channels,
+                application,
+                error.offset()
+            );
+
+        super(runtime, encoderId);
         this.#holder = new ResourcesHolder();
-        this.#error = new Integer(runtime);
+        this.#error = error;
         this.#runtime = runtime;
-        this.#errorPointer = new Pointer(runtime, this.#error);
         /**
          * pcm buffer
          */
@@ -42,21 +49,16 @@ export default class Encoder {
          */
         this.#holder.add(this.#encoded);
         this.#holder.add(this.#pcm);
-        this.#holder.add(this.#errorPointer);
         this.#holder.add(this.#error);
         /**
          * create encoder
          */
-        this.#encoder = runtime
-            .originalRuntime()
-            ._opus_encoder_create(
-                sampleRate,
-                channels,
-                application,
-                this.#errorPointer.value()
-            );
-        if (this.#error.value() < 0) {
-            throw new Error("Failed to create encoder");
+        this.#encoder = encoderId;
+        if (error.value() < 0) {
+            throw new Error('Failed to create encoder');
+        }
+        if (!outBufferLength) {
+            throw new Error('outBufferLength must be more than 0');
         }
     }
     public encoded() {

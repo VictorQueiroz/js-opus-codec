@@ -1,10 +1,11 @@
+import { boundMethod } from 'autobind-decorator';
 import { RingBuffer } from 'opus-codec/opus';
-import { MessagePort } from 'worker_threads';
 
 type Channels = Float32Array[];
 
 declare abstract class AudioWorkletProcessor {
     port: MessagePort;
+    constructor(...args: unknown[]);
     abstract process(
         inputList: Channels[],
         outputList: Channels[],
@@ -18,7 +19,9 @@ declare const registerProcessor: (
 ) => void;
 
 class DefaultAudioProcessor extends AudioWorkletProcessor {
-    ringBuffer: RingBuffer | null = null;
+    #ringBuffer: RingBuffer | null = null;
+    #shouldContinue = true;
+
     static get parameterDescriptors() {
         return [
             {
@@ -29,20 +32,27 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
             },
         ];
     }
-    process(
+
+    public constructor(...args: unknown[]) {
+        super(args);
+        this.port.addEventListener('message', this.onMessage);
+        this.port.start();
+    }
+
+    public process(
         inputList: Channels[],
         _: Channels[],
         parameters: Record<string, Float32Array>
     ) {
         const frameSize = parameters['frameSize'][0];
         const debug = parameters['debug'][0] ? true : false;
-        if (!this.ringBuffer) {
-            this.ringBuffer = new RingBuffer(frameSize);
+        if (!this.#ringBuffer) {
+            this.#ringBuffer = new RingBuffer(frameSize);
         }
 
         if (!inputList.length) {
             console.error('no data available in input list: %o', inputList);
-            return true;
+            return this.#shouldContinue;
         }
 
         for (const inputChannel of inputList) {
@@ -54,9 +64,9 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
                 break;
             }
 
-            this.ringBuffer.write(inputChannel[0]);
+            this.#ringBuffer.write(inputChannel[0]);
 
-            const samples = this.ringBuffer.read();
+            const samples = this.#ringBuffer.read();
 
             if (samples) {
                 if (debug) {
@@ -71,7 +81,12 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
             }
             break;
         }
-        return true;
+        return this.#shouldContinue;
+    }
+    @boundMethod private onMessage(e: MessageEvent) {
+        if (e.data && e.data.stop) {
+            this.#shouldContinue = false;
+        }
     }
 }
 

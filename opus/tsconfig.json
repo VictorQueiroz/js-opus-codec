@@ -4,6 +4,13 @@
         "types": [],
         "lib": ["ESNext"]
     },
-    "include": ["Decoder.ts", "Encoder.ts", "RingBuffer.ts", "index.ts"],
+    "include": [
+        "Decoder.ts",
+        "Encoder.ts",
+        "RingBuffer.ts",
+        "index.ts",
+        "OpusGettersAndSetters.ts",
+        "constants.ts"
+    ],
     "references": [{ "path": "../runtime" }]
 }

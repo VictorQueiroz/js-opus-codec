@@ -1,4 +1,7 @@
-export interface EmscriptenRuntime {
+type GeneratedOpusGettersAndSetters =
+    import('./opus-ts-getters-and-setters').GeneratedOpusGettersAndSetters;
+
+export interface EmscriptenRuntime extends GeneratedOpusGettersAndSetters {
     HEAPU8: Uint8Array;
     _malloc(n: number): number;
     _size_of_int(): number;

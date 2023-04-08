@@ -27,7 +27,7 @@ Module['ready'] = new Promise(function(resolve, reject) {
   readyPromiseResolve = resolve;
   readyPromiseReject = reject;
 });
-["_size_of_int","_size_of_void_ptr","_malloc","_free","_opus_decoder_create","_opus_decoder_destroy","_opus_decode_float","_opus_encoder_create","_opus_encoder_destroy","_opus_encoder_ctl","_opus_encode_float","_fflush","onRuntimeInitialized"].forEach((prop) => {
+["_size_of_int","_size_of_void_ptr","_malloc","_free","_opus_decoder_create","_opus_decoder_destroy","_opus_decode_float","_opus_encoder_create","_opus_encoder_destroy","_opus_encoder_ctl","_opus_encode_float","_opus_set_complexity","_opus_get_complexity","_opus_set_bitrate","_opus_get_bitrate","_opus_set_vbr","_opus_get_vbr","_opus_set_vbr_constraint","_opus_get_vbr_constraint","_opus_set_force_channels","_opus_get_force_channels","_opus_set_max_bandwidth","_opus_get_max_bandwidth","_opus_set_bandwidth","_opus_set_signal","_opus_get_signal","_opus_set_application","_opus_get_application","_opus_get_lookahead","_opus_set_inband_fec","_opus_get_inband_fec","_opus_set_packet_loss_perc","_opus_get_packet_loss_perc","_opus_set_dtx","_opus_get_dtx","_opus_set_lsb_depth","_opus_get_lsb_depth","_opus_set_expert_frame_duration","_opus_get_expert_frame_duration","_opus_set_prediction_disabled","_opus_get_prediction_disabled","_opus_get_bandwidth","_opus_get_sample_rate","_opus_set_phase_inversion_disabled","_opus_get_phase_inversion_disabled","_opus_get_in_dtx","_opus_set_gain","_opus_get_gain","_opus_get_last_packet_duration","_opus_get_pitch","_fflush","onRuntimeInitialized"].forEach((prop) => {
   if (!Object.getOwnPropertyDescriptor(Module['ready'], prop)) {
     Object.defineProperty(Module['ready'], prop, {
       get: () => abort('You are getting ' + prop + ' on the Promise object, instead of the instance. Use .then() to get called back with the instance, see the MODULARIZE docs in src/settings.js'),
@@ -1380,6 +1380,84 @@ var _opus_encoder_destroy = Module["_opus_encoder_destroy"] = createExportWrappe
 var _size_of_int = Module["_size_of_int"] = createExportWrapper("size_of_int");
 /** @type {function(...*):?} */
 var _size_of_void_ptr = Module["_size_of_void_ptr"] = createExportWrapper("size_of_void_ptr");
+/** @type {function(...*):?} */
+var _opus_set_complexity = Module["_opus_set_complexity"] = createExportWrapper("opus_set_complexity");
+/** @type {function(...*):?} */
+var _opus_get_complexity = Module["_opus_get_complexity"] = createExportWrapper("opus_get_complexity");
+/** @type {function(...*):?} */
+var _opus_set_bitrate = Module["_opus_set_bitrate"] = createExportWrapper("opus_set_bitrate");
+/** @type {function(...*):?} */
+var _opus_get_bitrate = Module["_opus_get_bitrate"] = createExportWrapper("opus_get_bitrate");
+/** @type {function(...*):?} */
+var _opus_set_vbr = Module["_opus_set_vbr"] = createExportWrapper("opus_set_vbr");
+/** @type {function(...*):?} */
+var _opus_get_vbr = Module["_opus_get_vbr"] = createExportWrapper("opus_get_vbr");
+/** @type {function(...*):?} */
+var _opus_set_vbr_constraint = Module["_opus_set_vbr_constraint"] = createExportWrapper("opus_set_vbr_constraint");
+/** @type {function(...*):?} */
+var _opus_get_vbr_constraint = Module["_opus_get_vbr_constraint"] = createExportWrapper("opus_get_vbr_constraint");
+/** @type {function(...*):?} */
+var _opus_set_force_channels = Module["_opus_set_force_channels"] = createExportWrapper("opus_set_force_channels");
+/** @type {function(...*):?} */
+var _opus_get_force_channels = Module["_opus_get_force_channels"] = createExportWrapper("opus_get_force_channels");
+/** @type {function(...*):?} */
+var _opus_set_max_bandwidth = Module["_opus_set_max_bandwidth"] = createExportWrapper("opus_set_max_bandwidth");
+/** @type {function(...*):?} */
+var _opus_get_max_bandwidth = Module["_opus_get_max_bandwidth"] = createExportWrapper("opus_get_max_bandwidth");
+/** @type {function(...*):?} */
+var _opus_set_bandwidth = Module["_opus_set_bandwidth"] = createExportWrapper("opus_set_bandwidth");
+/** @type {function(...*):?} */
+var _opus_set_signal = Module["_opus_set_signal"] = createExportWrapper("opus_set_signal");
+/** @type {function(...*):?} */
+var _opus_get_signal = Module["_opus_get_signal"] = createExportWrapper("opus_get_signal");
+/** @type {function(...*):?} */
+var _opus_set_application = Module["_opus_set_application"] = createExportWrapper("opus_set_application");
+/** @type {function(...*):?} */
+var _opus_get_application = Module["_opus_get_application"] = createExportWrapper("opus_get_application");
+/** @type {function(...*):?} */
+var _opus_get_lookahead = Module["_opus_get_lookahead"] = createExportWrapper("opus_get_lookahead");
+/** @type {function(...*):?} */
+var _opus_set_inband_fec = Module["_opus_set_inband_fec"] = createExportWrapper("opus_set_inband_fec");
+/** @type {function(...*):?} */
+var _opus_get_inband_fec = Module["_opus_get_inband_fec"] = createExportWrapper("opus_get_inband_fec");
+/** @type {function(...*):?} */
+var _opus_set_packet_loss_perc = Module["_opus_set_packet_loss_perc"] = createExportWrapper("opus_set_packet_loss_perc");
+/** @type {function(...*):?} */
+var _opus_get_packet_loss_perc = Module["_opus_get_packet_loss_perc"] = createExportWrapper("opus_get_packet_loss_perc");
+/** @type {function(...*):?} */
+var _opus_set_dtx = Module["_opus_set_dtx"] = createExportWrapper("opus_set_dtx");
+/** @type {function(...*):?} */
+var _opus_get_dtx = Module["_opus_get_dtx"] = createExportWrapper("opus_get_dtx");
+/** @type {function(...*):?} */
+var _opus_set_lsb_depth = Module["_opus_set_lsb_depth"] = createExportWrapper("opus_set_lsb_depth");
+/** @type {function(...*):?} */
+var _opus_get_lsb_depth = Module["_opus_get_lsb_depth"] = createExportWrapper("opus_get_lsb_depth");
+/** @type {function(...*):?} */
+var _opus_set_expert_frame_duration = Module["_opus_set_expert_frame_duration"] = createExportWrapper("opus_set_expert_frame_duration");
+/** @type {function(...*):?} */
+var _opus_get_expert_frame_duration = Module["_opus_get_expert_frame_duration"] = createExportWrapper("opus_get_expert_frame_duration");
+/** @type {function(...*):?} */
+var _opus_set_prediction_disabled = Module["_opus_set_prediction_disabled"] = createExportWrapper("opus_set_prediction_disabled");
+/** @type {function(...*):?} */
+var _opus_get_prediction_disabled = Module["_opus_get_prediction_disabled"] = createExportWrapper("opus_get_prediction_disabled");
+/** @type {function(...*):?} */
+var _opus_get_bandwidth = Module["_opus_get_bandwidth"] = createExportWrapper("opus_get_bandwidth");
+/** @type {function(...*):?} */
+var _opus_get_sample_rate = Module["_opus_get_sample_rate"] = createExportWrapper("opus_get_sample_rate");
+/** @type {function(...*):?} */
+var _opus_set_phase_inversion_disabled = Module["_opus_set_phase_inversion_disabled"] = createExportWrapper("opus_set_phase_inversion_disabled");
+/** @type {function(...*):?} */
+var _opus_get_phase_inversion_disabled = Module["_opus_get_phase_inversion_disabled"] = createExportWrapper("opus_get_phase_inversion_disabled");
+/** @type {function(...*):?} */
+var _opus_get_in_dtx = Module["_opus_get_in_dtx"] = createExportWrapper("opus_get_in_dtx");
+/** @type {function(...*):?} */
+var _opus_set_gain = Module["_opus_set_gain"] = createExportWrapper("opus_set_gain");
+/** @type {function(...*):?} */
+var _opus_get_gain = Module["_opus_get_gain"] = createExportWrapper("opus_get_gain");
+/** @type {function(...*):?} */
+var _opus_get_last_packet_duration = Module["_opus_get_last_packet_duration"] = createExportWrapper("opus_get_last_packet_duration");
+/** @type {function(...*):?} */
+var _opus_get_pitch = Module["_opus_get_pitch"] = createExportWrapper("opus_get_pitch");
 /** @type {function(...*):?} */
 var ___errno_location = createExportWrapper("__errno_location");
 /** @type {function(...*):?} */

@@ -4,6 +4,6 @@ add_subdirectory(libopusenc-cmake)
 
 add_library(
     RecTimeWebWorker SHARED
-    main.c
+    main.c opus_js_getters_and_setters.c
 )
 target_link_libraries(RecTimeWebWorker PUBLIC opus libopusenc speexdsp)
