@@ -1107,9 +1107,9 @@ optionator@^0.9.1:
     word-wrap "^1.2.3"
 
 opus-codec@0.x:
-  version "0.0.33"
-  resolved "https://registry.yarnpkg.com/opus-codec/-/opus-codec-0.0.33.tgz#f9da6c7e094661a633f8cabd29ef4fb5a480cde6"
-  integrity sha512-ldVqZmSz7kW63QJ7XmJfkeGYmkve78x+hfaEyk/JaJGCuh1m6VakiWoqqmrSuJ7kdYP1ojaLPQKcGmKpd7lkMg==
+  version "0.0.43"
+  resolved "https://registry.yarnpkg.com/opus-codec/-/opus-codec-0.0.43.tgz#5818f8e2829ef9d09663be65fd7612ca2de4095a"
+  integrity sha512-rcVuy/pYMN0OLfYB7ilTqFyCawy2Jxbfho+y2nF6fVhP1mYGYcuqPwn+Mvl9Yc72kx1Rca59uFgmmiam+rDgjA==
   dependencies:
     autobind-decorator "^2.4.0"
     opus-codec "0.x"
