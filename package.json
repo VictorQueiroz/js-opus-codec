@@ -19,7 +19,7 @@
         "{native,runtime,opus}/*.{d.ts,js,wasm}"
     ],
     "scripts": {
-        "prepublishOnly": "npx tsc -b opus runtime",
+        "prepublishOnly": "npx tsc -b test --force",
         "test": "npx ts-node test"
     },
     "dependencies": {
