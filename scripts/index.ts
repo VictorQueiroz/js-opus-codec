@@ -559,7 +559,7 @@ function getOpusRequestName(name: string) {
 
 async function generateOpusGettersAndSettersClass() {
     const cs = new CodeStream();
-    cs.write(`import {Runtime/*,Pointer*/,Integer} from '../runtime';\n`);
+    cs.write(`import { Runtime, Integer } from '../runtime';\n`);
     cs.write(`import constants from './constants';\n`);
     cs.write(
         'export class OpusGettersAndSetters {\n',
