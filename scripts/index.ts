@@ -281,6 +281,7 @@ async function compile() {
             (a, b) => [...a, '-s', b],
             new Array<string>()
         ),
+        '-O3',
         '-o',
         path.resolve(__dirname, '../native/index.js'),
     ]);
@@ -569,16 +570,12 @@ async function generateOpusGettersAndSettersClass() {
         () => {
             cs.write(`readonly #opusEncoderOffset;\n`);
             cs.write(`readonly #runtime;\n`);
-            // cs.write(`readonly #pointer;\n`);
             cs.write(`readonly #value;\n`);
             cs.write(
                 'public constructor(runtime: Runtime, opusEncoderOffset: number) {\n',
                 () => {
                     cs.write(`this.#runtime = runtime;\n`);
                     cs.write(`this.#value = new Integer(runtime);\n`);
-                    // cs.write(
-                    //     `this.#pointer = new Pointer(runtime,this.#value);\n`
-                    // );
                     cs.write(`this.#opusEncoderOffset = opusEncoderOffset;\n`);
                 },
                 '}\n'
