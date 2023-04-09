@@ -177,10 +177,6 @@ async function generateOpusGettersAndSetters() {
                     const argumentType = opusGettersAndSettersArgumentTypes
                         .get(c[0])
                         ?.arguments.find((a) => a.name === x);
-                    console.log(
-                        x,
-                        opusGettersAndSettersArgumentTypes.get(c[0])
-                    );
                     if (typeof argumentType === 'undefined')
                         throw new Error(`failed to get argument type: ${c[0]}`);
                     return `${
