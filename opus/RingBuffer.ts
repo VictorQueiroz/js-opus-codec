@@ -6,7 +6,9 @@ export default class RingBuffer {
     public constructor(frameSize: number) {
         this.#readOffset = 0;
         this.#writeOffset = 0;
-        this.#arrayBuffer = new ArrayBuffer(1024 * 1024 * 4);
+        this.#arrayBuffer = new ArrayBuffer(
+            frameSize * Float32Array.BYTES_PER_ELEMENT * 2
+        );
         this.#frameSize = frameSize;
     }
     #view() {
