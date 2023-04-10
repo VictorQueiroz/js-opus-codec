@@ -1,4 +1,4 @@
-import {Runtime/*,Pointer*/,Integer} from '../runtime';
+import { Runtime, Integer } from '../runtime';
 import constants from './constants';
 export class OpusGettersAndSetters {
     readonly #opusEncoderOffset;
