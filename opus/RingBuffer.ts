@@ -6,9 +6,7 @@ export default class RingBuffer {
     public constructor(frameSize: number) {
         this.#readOffset = 0;
         this.#writeOffset = 0;
-        this.#arrayBuffer = new ArrayBuffer(
-            frameSize * Float32Array.BYTES_PER_ELEMENT * 2
-        );
+        this.#arrayBuffer = new ArrayBuffer(this.#initialSize());
         this.#frameSize = frameSize;
     }
     #view() {
@@ -40,9 +38,14 @@ export default class RingBuffer {
         if (this.#view().length <= samples) {
             const oldArrayBuffer = this.#arrayBuffer;
             this.#arrayBuffer = new ArrayBuffer(
-                oldArrayBuffer.byteLength + sampleCountInBytes + 1024 * 1024 * 4
+                oldArrayBuffer.byteLength +
+                    sampleCountInBytes +
+                    this.#initialSize()
             );
             this.#view().set(new Uint8Array(oldArrayBuffer));
         }
+    }
+    #initialSize() {
+        return this.#frameSize * Float32Array.BYTES_PER_ELEMENT * 2;
     }
 }
