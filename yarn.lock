@@ -1175,9 +1175,9 @@ p-try@^2.0.0:
   integrity sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==
 
 package-utilities@0.x:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/package-utilities/-/package-utilities-0.0.4.tgz#c8ab09acb19cdfc538214958b41b9ee22ce30628"
-  integrity sha512-tqeD9kZDI2AUBqv1nbyOdoWR5KWfvc37UnWYxmUzeKbK52jN7lKg1Rno7tN9GT16q0/FCnECf8UyKI79cByyBw==
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/package-utilities/-/package-utilities-0.0.6.tgz#ca7f7c3a01c8c663ccc60fa1819e201323bba765"
+  integrity sha512-LmHK/c3dFCgX+zEcjq4Iroks+m6G01+iMCQ2FMXFt/MR6pYexRKtZFci1Sn4LUhA3o1e0MV8gRnJRyJBzWilWA==
   dependencies:
     glob "10.x"
 
