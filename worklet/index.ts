@@ -52,7 +52,6 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
 
         if (!inputList.length) {
             console.error('no data available in input list: %o', inputList);
-            return this.#shouldContinue;
         }
 
         for (const inputChannel of inputList) {
@@ -79,8 +78,22 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
                     samples,
                 });
             }
+            // for now, get just the first channel
             break;
         }
+
+        if (!this.#shouldContinue) {
+            let samples: Float32Array | null;
+            do {
+                samples = this.#ringBuffer.drain();
+                if (samples !== null) {
+                    this.port.postMessage({
+                        samples,
+                    });
+                }
+            } while (samples !== null);
+        }
+
         return this.#shouldContinue;
     }
     @boundMethod private onMessage(e: MessageEvent) {
