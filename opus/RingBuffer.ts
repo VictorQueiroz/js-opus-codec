@@ -35,14 +35,14 @@ export default class RingBuffer {
     }
     #maybeReallocate(samples: number) {
         const sampleCountInBytes = samples * Float32Array.BYTES_PER_ELEMENT;
-        if (this.#view().length <= samples) {
+        if (this.#view().length - this.#writeOffset <= samples) {
             const oldArrayBuffer = this.#arrayBuffer;
             this.#arrayBuffer = new ArrayBuffer(
                 oldArrayBuffer.byteLength +
                     sampleCountInBytes +
                     this.#initialSize()
             );
-            this.#view().set(new Uint8Array(oldArrayBuffer));
+            this.#view().set(new Float32Array(oldArrayBuffer));
         }
     }
     #initialSize() {

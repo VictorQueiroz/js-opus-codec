@@ -177,8 +177,21 @@ async function testRingBuffer() {
     );
 }
 
+async function testStressRingBuffer() {
+    const rb = new opus.RingBuffer(1024);
+    rb.write(new Float32Array(1024));
+    rb.write(new Float32Array(1024));
+    rb.write(new Float32Array(1024));
+    rb.write(new Float32Array(1024));
+    rb.write(new Float32Array(1024));
+    rb.write(new Float32Array(1024));
+    rb.write(new Float32Array(1024));
+    rb.write(new Float32Array(1024));
+}
+
 (async () => {
     await testRingBuffer();
+    await testStressRingBuffer();
     await testEncoderOpusBadArg();
     await testEncoderOpusSuccess();
     await testEncoderOpusEncoding();
