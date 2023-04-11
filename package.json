@@ -14,7 +14,7 @@
     "webpack-cli": "5.x"
   },
   "name": "opus-codec",
-  "version": "0.0.75",
+  "version": "0.0.76",
   "license": "MIT",
   "files": [
     "{native,runtime,opus,es}/**/*.{d.ts,js,map,wasm}"
