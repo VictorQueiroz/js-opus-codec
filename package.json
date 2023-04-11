@@ -17,7 +17,7 @@
     "version": "0.0.69",
     "license": "MIT",
     "files": [
-        "{native,runtime,opus,es}/*.{d.ts,js,wasm}"
+        "{native,runtime,opus,es}/**/*.{d.ts,js,wasm}"
     ],
     "scripts": {
         "build": "npx tsc -b test --force",
