@@ -139,11 +139,15 @@ onmessage = async (e: MessageEvent) => {
                 throw new Error('Failed to get encoder');
             }
 
+            const shouldDrain = req.data.input === null;
+
             if (req.data.input) {
                 encoderInstance.ringBuffer.write(req.data.input.pcm);
             }
 
-            const samples = encoderInstance.ringBuffer.read();
+            const samples =
+                encoderInstance.ringBuffer.read() ??
+                (shouldDrain ? encoderInstance.ringBuffer.drain() : null);
 
             if (samples === null) {
                 sendResponse<IEncodeFloat>({
