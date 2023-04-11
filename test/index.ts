@@ -189,8 +189,17 @@ async function testStressRingBuffer() {
     rb.write(new Float32Array(1024));
 }
 
+async function testDrainRingBuffer() {
+    const rb = new opus.RingBuffer(1024);
+    rb.write(new Float32Array(1024));
+    rb.write(new Float32Array(256));
+    assert.strict.deepEqual(rb.read(), new Float32Array(1024));
+    assert.strict.deepEqual(rb.drain(), new Float32Array(256));
+}
+
 (async () => {
     await testRingBuffer();
+    await testDrainRingBuffer();
     await testStressRingBuffer();
     await testEncoderOpusBadArg();
     await testEncoderOpusSuccess();

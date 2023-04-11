@@ -17,6 +17,16 @@ export default class RingBuffer {
         this.#view().set(value, this.#writeOffset);
         this.#writeOffset += value.length;
     }
+    public drain() {
+        const samples = this.#view().subarray(
+            this.#readOffset,
+            this.#writeOffset
+        );
+        if (!samples.length) {
+            return null;
+        }
+        return samples;
+    }
     public read(): Float32Array | null {
         const remainingBytes = this.#writeOffset - this.#readOffset;
         if (remainingBytes >= this.#frameSize) {
