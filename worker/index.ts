@@ -1,7 +1,6 @@
 import { Decoder, Encoder, RingBuffer } from 'opus-codec/opus';
 import {
     ICreateEncoder,
-    IDestroyEncoder,
     IEncodeFloat,
     RequestResponse,
     RequestType,
@@ -13,6 +12,7 @@ import {
     ICreateDecoder,
     IDecodeFloat,
     IDestroyDecoder,
+    IDestroyEncoder,
 } from '../actions/actions';
 import native from 'opus-codec/native';
 import { Runtime } from 'opus-codec/runtime';
@@ -32,6 +32,13 @@ interface IEncoderInstance {
 
 function generateCodecId() {
     return crypto.getRandomValues(new Uint32Array(4)).join('-');
+}
+
+function sendResponse<T>(
+    response: RequestResponse<RequestResponseType<T>>,
+    transfer: Transferable[] = []
+) {
+    return postMessage(response, transfer);
 }
 
 onmessage = async (e: MessageEvent) => {
@@ -55,13 +62,10 @@ onmessage = async (e: MessageEvent) => {
                 ),
                 encoder,
             });
-            const response: RequestResponse<
-                RequestResponseType<ICreateEncoder>
-            > = {
+            sendResponse<ICreateEncoder>({
                 requestId: req.requestId,
                 value: encoderId,
-            };
-            postMessage(response);
+            });
             break;
         }
         case RequestType.CreateDecoder: {
@@ -73,13 +77,10 @@ onmessage = async (e: MessageEvent) => {
             );
             const encoderId = generateCodecId();
             decoders.set(encoderId, decoder);
-            const response: RequestResponse<
-                RequestResponseType<ICreateDecoder>
-            > = {
+            sendResponse<ICreateDecoder>({
                 requestId: req.requestId,
                 value: encoderId,
-            };
-            postMessage(response);
+            });
             break;
         }
         case RequestType.DestroyEncoder: {
@@ -90,18 +91,19 @@ onmessage = async (e: MessageEvent) => {
 
             encoders.delete(req.data);
             encoderInstance.encoder.destroy();
-            const response: RequestResponse<
-                RequestResponseType<IDestroyEncoder>
-            > = encoderInstance
-                ? {
-                      requestId: req.requestId,
-                      value: req.data,
-                  }
-                : {
-                      requestId: req.requestId,
-                      failures: [`failed to find encoder with id: ${req.data}`],
-                  };
-            postMessage(response);
+            sendResponse<IDestroyEncoder>(
+                encoderInstance
+                    ? {
+                          requestId: req.requestId,
+                          value: null,
+                      }
+                    : {
+                          requestId: req.requestId,
+                          failures: [
+                              `failed to find encoder with id: ${req.data}`,
+                          ],
+                      }
+            );
             break;
         }
         case RequestType.DestroyDecoder: {
@@ -116,20 +118,19 @@ onmessage = async (e: MessageEvent) => {
             if (decoder) {
                 decoder.destroy();
             }
-            const response: RequestResponse<
-                RequestResponseType<IDestroyDecoder>
-            > = decoder
-                ? {
-                      requestId: req.requestId,
-                      value: true,
-                  }
-                : {
-                      requestId: req.requestId,
-                      failures: [
-                          `failed to find decoder with id: ${req.data.decoderId}`,
-                      ],
-                  };
-            postMessage(response);
+            sendResponse<IDestroyDecoder>(
+                decoder
+                    ? {
+                          requestId: req.requestId,
+                          value: null,
+                      }
+                    : {
+                          requestId: req.requestId,
+                          failures: [
+                              `failed to find decoder with id: ${req.data.decoderId}`,
+                          ],
+                      }
+            );
             break;
         }
         case RequestType.EncodeFloat: {
@@ -138,46 +139,45 @@ onmessage = async (e: MessageEvent) => {
                 throw new Error('Failed to get encoder');
             }
 
-            encoderInstance.ringBuffer.write(req.data.pcm);
+            if (req.data.input) {
+                encoderInstance.ringBuffer.write(req.data.input.pcm);
+            }
 
             const samples = encoderInstance.ringBuffer.read();
 
             if (samples === null) {
-                const response: RequestResponse<
-                    RequestResponseType<IEncodeFloat>
-                > = {
+                sendResponse<IEncodeFloat>({
                     requestId: req.requestId,
                     value: {
                         encoded: null,
                     },
-                };
-                postMessage(response);
-                return;
+                });
+                break;
             }
 
             const encodedSampleCount = encoderInstance.encoder.encodeFloat(
                 samples,
-                req.data.frameSize,
+                samples.length,
                 req.data.maxDataBytes
             );
             const encoded = {
                 buffer: new ArrayBuffer(encodedSampleCount),
                 duration: encodedSampleCount / encoderInstance.sampleRate,
             };
-            const response: RequestResponse<RequestResponseType<IEncodeFloat>> =
-                {
-                    requestId: req.requestId,
-                    value: {
-                        encoded,
-                    },
-                };
-
             new Uint8Array(encoded.buffer).set(
                 encoderInstance.encoder
                     .encoded()
                     .subarray(0, encodedSampleCount)
             );
-            postMessage(response, [encoded.buffer]);
+            sendResponse<IEncodeFloat>(
+                {
+                    requestId: req.requestId,
+                    value: {
+                        encoded,
+                    },
+                },
+                [encoded.buffer]
+            );
             break;
         }
         case RequestType.DecodeFloat: {
@@ -194,7 +194,7 @@ onmessage = async (e: MessageEvent) => {
                 decoded = null;
             }
 
-            const response: RequestResponse<RequestResponseType<IDecodeFloat>> =
+            sendResponse<IDecodeFloat>(
                 decoded
                     ? {
                           requestId: req.requestId,
@@ -207,41 +207,49 @@ onmessage = async (e: MessageEvent) => {
                           failures: [
                               `no decoder found for decoder id: ${req.data.decoderId}`,
                           ],
-                      };
-
-            postMessage(response, decoded ? [decoded.buffer] : []);
+                      },
+                decoded ? [decoded.buffer] : []
+            );
             break;
         }
         case RequestType.OpusSetRequest: {
             const encoderInstance = encoders.get(req.data.encoderId);
-            const response: RequestResponse<
-                RequestResponseType<IOpusSetRequest>
-            > = encoderInstance?.encoder
-                ? {
-                      value: setToEncoder(encoderInstance.encoder, req.data),
-                      requestId: req.requestId,
-                  }
-                : {
-                      requestId: req.requestId,
-                      failures: [`no encoder found for: ${req.data.encoderId}`],
-                  };
-            postMessage(response);
+            sendResponse<IOpusSetRequest>(
+                encoderInstance?.encoder
+                    ? {
+                          value: setToEncoder(
+                              encoderInstance.encoder,
+                              req.data
+                          ),
+                          requestId: req.requestId,
+                      }
+                    : {
+                          requestId: req.requestId,
+                          failures: [
+                              `no encoder found for: ${req.data.encoderId}`,
+                          ],
+                      }
+            );
             break;
         }
         case RequestType.OpusGetRequest: {
             const encoderInstance = encoders.get(req.data.encoderId);
-            const response: RequestResponse<
-                RequestResponseType<IOpusGetRequest>
-            > = encoderInstance?.encoder
-                ? {
-                      value: getFromEncoder(encoderInstance.encoder, req.data),
-                      requestId: req.requestId,
-                  }
-                : {
-                      requestId: req.requestId,
-                      failures: [`no encoder found for: ${req.data.encoderId}`],
-                  };
-            postMessage(response);
+            sendResponse<IOpusGetRequest>(
+                encoderInstance?.encoder
+                    ? {
+                          value: getFromEncoder(
+                              encoderInstance.encoder,
+                              req.data
+                          ),
+                          requestId: req.requestId,
+                      }
+                    : {
+                          requestId: req.requestId,
+                          failures: [
+                              `no encoder found for: ${req.data.encoderId}`,
+                          ],
+                      }
+            );
             break;
         }
     }

@@ -91,7 +91,7 @@ export interface IDestroyEncoderOptions {
     encoderId: CodecId;
 }
 
-export interface IDestroyEncoder extends IWorkerRequest<CodecId, CodecId> {
+export interface IDestroyEncoder extends IWorkerRequest<CodecId, null> {
     type: RequestType.DestroyEncoder;
 }
 
@@ -102,6 +102,8 @@ export function destroyEncoder(encoderId: CodecId): IDestroyEncoder {
         requestId: getRequestId(),
     };
 }
+
+export interface IDrainRingBufferResult {}
 
 export enum RequestType {
     CreateEncoder,
@@ -115,7 +117,7 @@ export enum RequestType {
 }
 
 export interface IDestroyDecoder
-    extends IWorkerRequest<{ decoderId: CodecId }, boolean> {
+    extends IWorkerRequest<{ decoderId: CodecId }, null> {
     type: RequestType.DestroyDecoder;
 }
 
@@ -171,10 +173,15 @@ export interface IEncodeFloat
 }
 
 export interface IEncodeFloatOptions {
-    pcm: Float32Array;
     encoderId: CodecId;
-    frameSize: number;
     maxDataBytes: number;
+    /**
+     * if null, it will try to drain the ring buffer for the data
+     * that has been queued
+     */
+    input: {
+        pcm: Float32Array;
+    } | null;
 }
 
 export type RequestResponseType<T> = T extends IWorkerRequest<unknown, infer R>
@@ -209,6 +216,6 @@ export function encodeFloat(data: IEncodeFloatOptions): IEncodeFloat {
         data,
         requestId: getRequestId(),
         type: RequestType.EncodeFloat,
-        transfer: [data.pcm.buffer],
+        transfer: data.input !== null ? [data.input.pcm] : [],
     };
 }
