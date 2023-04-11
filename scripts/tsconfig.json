@@ -2,7 +2,8 @@
     "extends": "../tsconfig.base.json",
     "compilerOptions": {
         "lib": ["ESNext"],
-        "types": ["node"]
+        "types": ["node"],
+        "moduleResolution": "node"
     },
     "include": ["index.ts", "../package.json"]
 }

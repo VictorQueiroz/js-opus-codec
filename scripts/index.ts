@@ -313,7 +313,7 @@ async function compile() {
             {
                 name: 'opus-codec-worker',
                 license: 'MIT',
-                version: (await import('../package.json')).default.version,
+                version: (await import('../package.json')).version,
                 files: ['**/*.{js,d.ts,map}'],
             },
             null,
