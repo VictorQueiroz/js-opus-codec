@@ -203,7 +203,7 @@ const onRequest = async (req: WorkerRequest) => {
 
             const encodedSampleCount = encoderInstance.encoder.encodeFloat(
                 samples,
-                samples.ngth,
+                samples.length,
                 req.data.maxDataBytes
             );
             const encoded = {
