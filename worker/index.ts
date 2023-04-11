@@ -13,16 +13,29 @@ import {
     IDecodeFloat,
     IDestroyDecoder,
     IDestroyEncoder,
+    IInitializeWorker,
 } from '../actions/actions';
 import native from 'opus-codec/native';
 import { Runtime } from 'opus-codec/runtime';
 import { getFromEncoder, setToEncoder } from './opus';
 
-const pendingRuntime = native({
-    locateFile: () => '/opus/index.wasm',
-});
-const encoders = new Map<CodecId, IEncoderInstance>();
-const decoders = new Map<CodecId, Decoder>();
+let workerState:
+    | {
+          runtime: Runtime;
+          decoders: Map<CodecId, Decoder>;
+          encoders: Map<CodecId, IEncoderInstance>;
+      }
+    | {
+          queue: Set<WorkerRequest>;
+      } = {
+    queue: new Set(),
+};
+
+// const pendingRuntime = native({
+//     locateFile: () => '/opus/index.wasm',
+// });
+// const encoders = new Map<CodecId, IEncoderInstance>();
+// const decoders = new Map<CodecId, Decoder>();
 
 interface IEncoderInstance {
     encoder: Encoder;
@@ -41,9 +54,38 @@ function sendResponse<T>(
     return postMessage(response, transfer);
 }
 
-onmessage = async (e: MessageEvent) => {
-    const runtime = new Runtime(await pendingRuntime);
-    const req = e.data as WorkerRequest;
+const onRequest = async (req: WorkerRequest) => {
+    if ('queue' in workerState) {
+        switch (req.type) {
+            case RequestType.InitializeWorker: {
+                const queue = workerState.queue;
+                const newWorkerState = {
+                    runtime: new Runtime(
+                        await native({
+                            locateFile: () => req.data.wasmFileHref,
+                        })
+                    ),
+                    encoders: new Map(),
+                    decoders: new Map(),
+                };
+                workerState = newWorkerState;
+                for (const req of queue) {
+                    await onRequest(req);
+                }
+                queue.clear();
+                sendResponse<IInitializeWorker>({
+                    requestId: req.requestId,
+                    value: null,
+                });
+                break;
+            }
+            default:
+                workerState.queue.add(req);
+                break;
+        }
+        return;
+    }
+    const { runtime, encoders, decoders } = workerState;
     switch (req.type) {
         case RequestType.CreateEncoder: {
             const encoder = new Encoder(
@@ -161,7 +203,7 @@ onmessage = async (e: MessageEvent) => {
 
             const encodedSampleCount = encoderInstance.encoder.encodeFloat(
                 samples,
-                samples.length,
+                samples.ngth,
                 req.data.maxDataBytes
             );
             const encoded = {
@@ -257,4 +299,14 @@ onmessage = async (e: MessageEvent) => {
             break;
         }
     }
+};
+
+onmessage = (e: MessageEvent) => {
+    const req = e.data as WorkerRequest;
+    onRequest(req).catch((reason) => {
+        console.error('failed to process request: %o', {
+            request: req,
+            reason,
+        });
+    });
 };

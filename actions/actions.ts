@@ -111,9 +111,29 @@ export enum RequestType {
     EncodeFloat,
     DecodeFloat,
     DestroyEncoder,
+    InitializeWorker,
     DestroyDecoder,
     OpusGetRequest,
     OpusSetRequest,
+}
+
+export interface IInitializeWorker
+    extends IWorkerRequest<IInitializeWorkerOptions, null> {
+    type: RequestType.InitializeWorker;
+}
+
+export interface IInitializeWorkerOptions {
+    wasmFileHref: string;
+}
+
+export function initializeWorker(
+    data: IInitializeWorkerOptions
+): IInitializeWorker {
+    return {
+        requestId: getRequestId(),
+        data,
+        type: RequestType.InitializeWorker,
+    };
 }
 
 export interface IDestroyDecoder
@@ -189,6 +209,7 @@ export type RequestResponseType<T> = T extends IWorkerRequest<unknown, infer R>
     : never;
 
 export type WorkerRequest =
+    | IInitializeWorker
     | IEncodeFloat
     | ICreateEncoder
     | ICreateDecoder
