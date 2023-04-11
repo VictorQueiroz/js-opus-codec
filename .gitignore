@@ -1,6 +1,7 @@
 tsconfig.tsbuildinfo
 *.js
 *.d.ts
+*.map
 /node_modules
 !/native/index.js
 !/native/index.d.ts
