@@ -18,23 +18,22 @@ export default class RingBuffer {
         this.#writeOffset += value.length;
     }
     public drain() {
-        const samples = this.#view().subarray(
-            this.#readOffset,
-            this.#writeOffset
-        );
-        if (!samples.length) {
-            return null;
-        }
-        return samples;
+        return this.#read(this.#writeOffset - this.#readOffset);
     }
     public read(): Float32Array | null {
+        return this.#read(this.#frameSize);
+    }
+    #read(sampleCount: number) {
+        if (!sampleCount) {
+            return null;
+        }
         const remainingBytes = this.#writeOffset - this.#readOffset;
-        if (remainingBytes >= this.#frameSize) {
+        if (remainingBytes >= sampleCount) {
             const view = this.#view().subarray(
                 this.#readOffset,
-                this.#readOffset + this.#frameSize
+                this.#readOffset + sampleCount
             );
-            this.#readOffset += this.#frameSize;
+            this.#readOffset += sampleCount;
             if (this.#readOffset >= this.#writeOffset) {
                 this.#writeOffset = 0;
                 this.#readOffset = 0;
