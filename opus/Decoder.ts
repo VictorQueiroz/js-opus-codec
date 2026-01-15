@@ -7,6 +7,7 @@ export default class Decoder {
     readonly #runtime;
     readonly #pcm;
     readonly #frameSize;
+    #data: Buffer | null = null;
     public constructor(
         runtime: Runtime,
         sampleRate: number,
@@ -35,7 +36,6 @@ export default class Decoder {
             this.#frameSize * channels * Float32Array.BYTES_PER_ELEMENT
         );
     }
-    #data: Buffer | null = null;
     public decodeFloat(value: Uint8Array, decodeFec = 0) {
         let data = this.#data;
         if (!data) {
@@ -88,5 +88,8 @@ export default class Decoder {
         this.#runtime.originalRuntime().opus_decoder_destroy(this.#decoder);
         this.#holder.destroy();
         this.#data?.destroy();
+    }
+    [Symbol.dispose]() {
+        this.destroy();
     }
 }

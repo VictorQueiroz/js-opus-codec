@@ -5,18 +5,14 @@
         "@types/audioworklet": "^0.0.92",
         "@types/node": "^24.10.8",
         "cli-argument-helper": "^2.3.0",
-        "codestreamjs": "^0.0.1",
-        "cxx-parser": "0.x",
-        "eslint": "8.x",
-        "glob": "9.x",
+        "eslint": "^8.57.1",
         "package-utilities": "0.x",
-        "prettier": "2.x",
-        "ts-loader": "9.x",
+        "prettier": "^3.8.0",
+        "ringbud": "^1.0.23",
         "tsx": "^4.21.0",
         "typescript": "^5.9.3",
-        "wasmparser": "^5.11.1",
         "webpack": "^5.104.1",
-        "webpack-cli": "5.x"
+        "webpack-cli": "^5.1.4"
     },
     "type": "module",
     "name": "opus-codec",
@@ -34,9 +30,6 @@
         "prepublishOnly": "npm run build:all && npm run set-es-paths",
         "set-es-paths": "npx package-utilities --set-es-paths --es-folder es --include \"{opus,runtime,actions}/**/*.js\"",
         "test": "npx ts-node test"
-    },
-    "dependencies": {
-        "ringbud": "^1.0.23"
     },
     "browser": {
         "./actions/opus.js": "./es/actions/opus.js",

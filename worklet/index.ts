@@ -2,6 +2,22 @@ import { RingBufferF32 } from 'ringbud';
 
 type Channels = Float32Array[];
 
+function interleave(ch: Float32Array[]): Float32Array {
+    const C = ch.length;
+    if (C === 0) return new Float32Array(0);
+
+    const N = ch[0].length;
+    for (let c = 1; c < C; c++) {
+        if (ch[c].length !== N) throw new Error('Channel length mismatch');
+    }
+
+    const out = new Float32Array(N * C);
+    for (let i = 0, o = 0; i < N; i++) {
+        for (let c = 0; c < C; c++, o++) out[o] = ch[c][i];
+    }
+    return out;
+}
+
 class DefaultAudioProcessor extends AudioWorkletProcessor {
     #ringBuffer: RingBufferF32 | null = null;
     #shouldContinue = true;
@@ -10,9 +26,6 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
         return [
             {
                 name: 'frameSize',
-            },
-            {
-                name: 'debug',
             },
         ];
     }
@@ -37,26 +50,24 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
             console.error('no data available in input list: %o', inputList);
         }
 
-        for (const inputChannel of inputList) {
-            if (!inputChannel.length) {
-                console.error(
-                    'channel available, but no data: %o',
-                    inputChannel
-                );
-                break;
+        const interleaved = new Array<Float32Array>();
+
+        for (const channels of inputList) {
+            if (!channels.length) {
+                continue;
             }
 
-            // for now, get just the first channel
-            this.#ringBuffer.write(inputChannel[0]);
+            interleaved.push(interleave(channels));
+        }
 
-            const samples = this.#ringBuffer.read();
+        this.#ringBuffer.write(interleave(interleaved));
 
-            if (samples !== null) {
-                this.port.postMessage({
-                    samples,
-                });
-            }
-            break;
+        const samples = this.#ringBuffer.read();
+
+        if (samples !== null) {
+            this.port.postMessage({
+                samples,
+            });
         }
 
         if (!this.#shouldContinue) {

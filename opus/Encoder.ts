@@ -87,13 +87,6 @@ export default class Encoder extends OpusGettersAndSetters {
             .set(
                 new Uint8Array(value.buffer, value.byteOffset, value.byteLength)
             );
-        (globalThis as any).console.log(
-            this.#encoder,
-            this.#pcm.offset(),
-            frameSize,
-            this.#encoded.offset(),
-            maxDataBytes
-        );
         const result = this.#runtime
             .originalRuntime()
             .opus_encode_float(
@@ -113,5 +106,8 @@ export default class Encoder extends OpusGettersAndSetters {
     public destroy() {
         this.#holder.destroy();
         this.#runtime.originalRuntime().opus_encoder_destroy(this.#encoder);
+    }
+    [Symbol.dispose]() {
+        this.destroy();
     }
 }

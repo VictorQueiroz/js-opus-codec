@@ -20,7 +20,7 @@ const configuration: Configuration[] = [
             rules: [
                 {
                     test: /\.wasm$/,
-                    type: 'asset/resource',
+                    type: 'asset/inline',
                 },
             ],
         },
@@ -36,7 +36,7 @@ const configuration: Configuration[] = [
             rules: [
                 {
                     test: /\.wasm$/,
-                    type: 'asset/resource',
+                    type: 'asset/inline',
                 },
             ],
         },

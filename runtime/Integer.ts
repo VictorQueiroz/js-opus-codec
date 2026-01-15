@@ -32,4 +32,8 @@ export default class Integer implements IResource {
         this.#runtime.free(this.#offset);
         this.#offset = 0;
     }
+
+    [Symbol.dispose]() {
+        this.destroy();
+    }
 }
