@@ -3,6 +3,7 @@ import Runtime from '../runtime/Runtime';
 import assert from 'assert';
 import child_process from 'child_process';
 import * as opus from '../opus';
+import { RingBufferF32 } from 'ringbud';
 
 async function createRuntime() {
     return new Runtime(await native());
@@ -60,7 +61,7 @@ async function testEncoderOpusEncoding() {
         '1',
         '-i',
     ]);
-    const ringBuffer = new opus.RingBuffer(frameSizeInSamples);
+    const ringBuffer = new RingBufferF32(frameSizeInSamples);
     pcm.stdout.on('data', (chunk) => {
         assert.strict.ok(Buffer.isBuffer(chunk));
         const buffer = new Float32Array(chunk.buffer);
@@ -131,7 +132,7 @@ async function testEncoderOpusBitrate() {
         '1',
         '-i',
     ]);
-    const ringBuffer = new opus.RingBuffer(frameSizeInSamples);
+    const ringBuffer = new RingBufferF32(frameSizeInSamples);
     pcm.stdout.on('data', (chunk) => {
         assert.strict.ok(Buffer.isBuffer(chunk));
         const buffer = new Float32Array(chunk.buffer);
@@ -163,7 +164,7 @@ async function testEncoderOpusBitrate() {
 }
 
 async function testRingBuffer() {
-    const ringBuffer = new opus.RingBuffer(2880);
+    const ringBuffer = new RingBufferF32(2880);
     ringBuffer.write(new Float32Array(2000));
     assert.strict.equal(ringBuffer.read(), null);
     ringBuffer.write(new Float32Array(880));
@@ -178,7 +179,7 @@ async function testRingBuffer() {
 }
 
 async function testStressRingBuffer() {
-    const rb = new opus.RingBuffer(1024);
+    const rb = new RingBufferF32(1024);
     rb.write(new Float32Array(1024));
     rb.write(new Float32Array(1024));
     rb.write(new Float32Array(1024));
@@ -190,7 +191,7 @@ async function testStressRingBuffer() {
 }
 
 async function testDrainRingBuffer() {
-    const rb = new opus.RingBuffer(1024);
+    const rb = new RingBufferF32(1024);
     rb.write(new Float32Array(1024));
     rb.write(new Float32Array(256));
     assert.strict.deepEqual(rb.read(), new Float32Array(1024));

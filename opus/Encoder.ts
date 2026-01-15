@@ -1,5 +1,5 @@
-import { Runtime, Integer, ResourcesHolder, Buffer } from '../runtime';
-import { OpusGettersAndSetters } from './OpusGettersAndSetters';
+import { Runtime, Integer, ResourcesHolder, Buffer } from '../runtime/index.js';
+import { OpusGettersAndSetters } from './OpusGettersAndSetters.js';
 
 export default class Encoder extends OpusGettersAndSetters {
     readonly #error;
@@ -25,7 +25,7 @@ export default class Encoder extends OpusGettersAndSetters {
         const error = new Integer(runtime);
         const encoderId = runtime
             .originalRuntime()
-            ._opus_encoder_create(
+            .opus_encoder_create(
                 sampleRate,
                 channels,
                 application,
@@ -87,10 +87,16 @@ export default class Encoder extends OpusGettersAndSetters {
             .set(
                 new Uint8Array(value.buffer, value.byteOffset, value.byteLength)
             );
-
+        (globalThis as any).console.log(
+            this.#encoder,
+            this.#pcm.offset(),
+            frameSize,
+            this.#encoded.offset(),
+            maxDataBytes
+        );
         const result = this.#runtime
             .originalRuntime()
-            ._opus_encode_float(
+            .opus_encode_float(
                 this.#encoder,
                 this.#pcm.offset(),
                 frameSize,
@@ -99,13 +105,13 @@ export default class Encoder extends OpusGettersAndSetters {
             );
 
         if (result < 0) {
-            throw new Error(`Failed to encode float`);
+            throw new Error(`Failed to encode float: ${result}`);
         }
 
         return result;
     }
     public destroy() {
         this.#holder.destroy();
-        this.#runtime.originalRuntime()._opus_encoder_destroy(this.#encoder);
+        this.#runtime.originalRuntime().opus_encoder_destroy(this.#encoder);
     }
 }

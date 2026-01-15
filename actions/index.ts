@@ -1,1 +1,1 @@
-export * as default from './actions';
+export * as default from './actions.js';

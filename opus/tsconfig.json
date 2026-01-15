@@ -1,8 +1,7 @@
 {
     "extends": "../tsconfig.base.json",
     "compilerOptions": {
-        "types": [],
-        "lib": ["ESNext"]
+        "moduleResolution": "nodenext"
     },
     "include": [
         "Decoder.ts",

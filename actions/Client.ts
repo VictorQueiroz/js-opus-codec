@@ -1,9 +1,8 @@
-import { boundMethod } from 'autobind-decorator';
 import {
     IWorkerRequest,
     RequestResponse,
     RequestResponseType,
-} from './actions';
+} from './actions.js';
 
 export default class Client {
     readonly #worker;
@@ -50,13 +49,13 @@ export default class Client {
             this.#worker.postMessage(data);
         });
     }
-    @boundMethod private onMessageError(e: MessageEvent) {
+    private onMessageError = (e: MessageEvent) => {
         console.error(e);
-    }
-    @boundMethod private onError(e: ErrorEvent) {
+    };
+    private onError = (e: ErrorEvent) => {
         console.error(e);
-    }
-    @boundMethod private onMessage(e: MessageEvent) {
+    };
+    private onMessage = (e: MessageEvent) => {
         const data = e.data as RequestResponse<unknown>;
         const request = this.#pending.get(data.requestId);
         if (!request) {
@@ -64,5 +63,5 @@ export default class Client {
             return;
         }
         request(data);
-    }
+    };
 }

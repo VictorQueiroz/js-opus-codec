@@ -1,53 +1,58 @@
 {
-  "devDependencies": {
-    "@types/node": "^24.10.8",
-    "codestreamjs": "^0.0.1",
-    "cxx-parser": "0.x",
-    "eslint": "8.x",
-    "glob": "9.x",
-    "package-utilities": "0.x",
-    "prettier": "2.x",
-    "ts-loader": "9.x",
-    "ts-node": "10.x",
-    "typescript": "5.x",
-    "webpack": "5.x",
-    "webpack-cli": "5.x"
-  },
-  "name": "opus-codec",
-  "version": "0.0.81",
-  "license": "MIT",
-  "files": [
-    "{native,runtime,opus,es}/**/*.{d.ts,js,map,wasm}"
-  ],
-  "scripts": {
-    "build": "npx tsc -b test --force",
-    "build:es:opus": "npx tsc --project opus --module ESNext --outDir es",
-    "build:es:actions": "npx tsc --project actions --module ESNext --outDir es",
-    "build:es:runtime": "npx tsc --project runtime --module ESNext --outDir es",
-    "build:all": "yarn run build && yarn run build:es:opus && yarn run build:es:runtime && yarn run build:es:actions",
-    "prepublishOnly": "yarn run build:all && yarn run set-es-paths",
-    "set-es-paths": "npx package-utilities --set-es-paths --es-folder es --include \"{opus,runtime,actions}/**/*.js\"",
-    "test": "npx ts-node test"
-  },
-  "dependencies": {
-    "autobind-decorator": "^2.4.0",
-    "opus-codec": "0.x"
-  },
-  "browser": {
-    "./actions/opus.js": "./es/actions/opus.js",
-    "./actions/index.js": "./es/actions/index.js",
-    "./actions/actions.js": "./es/actions/actions.js",
-    "./actions/Client.js": "./es/actions/Client.js",
-    "./opus/index.js": "./es/opus/index.js",
-    "./opus/constants.js": "./es/opus/constants.js",
-    "./opus/RingBuffer.js": "./es/opus/RingBuffer.js",
-    "./opus/OpusGettersAndSetters.js": "./es/opus/OpusGettersAndSetters.js",
-    "./opus/Encoder.js": "./es/opus/Encoder.js",
-    "./opus/Decoder.js": "./es/opus/Decoder.js",
-    "./runtime/index.js": "./es/runtime/index.js",
-    "./runtime/Runtime.js": "./es/runtime/Runtime.js",
-    "./runtime/ResourcesHolder.js": "./es/runtime/ResourcesHolder.js",
-    "./runtime/Integer.js": "./es/runtime/Integer.js",
-    "./runtime/Buffer.js": "./es/runtime/Buffer.js"
-  }
+    "devDependencies": {
+        "@high-nodejs/child_process": "^0.3.4",
+        "@textstream/core": "^0.3.1",
+        "@types/audioworklet": "^0.0.92",
+        "@types/node": "^24.10.8",
+        "cli-argument-helper": "^2.3.0",
+        "codestreamjs": "^0.0.1",
+        "cxx-parser": "0.x",
+        "eslint": "8.x",
+        "glob": "9.x",
+        "package-utilities": "0.x",
+        "prettier": "2.x",
+        "ts-loader": "9.x",
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3",
+        "wasmparser": "^5.11.1",
+        "webpack": "^5.104.1",
+        "webpack-cli": "5.x"
+    },
+    "type": "module",
+    "name": "opus-codec",
+    "version": "0.0.81",
+    "license": "MIT",
+    "files": [
+        "{native,runtime,opus,es}/**/*.{d.ts,js,map,wasm}"
+    ],
+    "scripts": {
+        "build": "npx tsc -b test --force",
+        "build:es:opus": "npx tsc --project opus --module NodeNext --outDir es",
+        "build:es:actions": "npx tsc --project actions --module NodeNext --outDir es",
+        "build:es:runtime": "npx tsc --project runtime --module NodeNext --outDir es",
+        "build:all": "npm run build && npm run build:es:opus && npm run build:es:runtime && npm run build:es:actions",
+        "prepublishOnly": "npm run build:all && npm run set-es-paths",
+        "set-es-paths": "npx package-utilities --set-es-paths --es-folder es --include \"{opus,runtime,actions}/**/*.js\"",
+        "test": "npx ts-node test"
+    },
+    "dependencies": {
+        "ringbud": "^1.0.23"
+    },
+    "browser": {
+        "./actions/opus.js": "./es/actions/opus.js",
+        "./actions/index.js": "./es/actions/index.js",
+        "./actions/actions.js": "./es/actions/actions.js",
+        "./actions/Client.js": "./es/actions/Client.js",
+        "./opus/index.js": "./es/opus/index.js",
+        "./opus/constants.js": "./es/opus/constants.js",
+        "./opus/RingBuffer.js": "./es/opus/RingBuffer.js",
+        "./opus/OpusGettersAndSetters.js": "./es/opus/OpusGettersAndSetters.js",
+        "./opus/Encoder.js": "./es/opus/Encoder.js",
+        "./opus/Decoder.js": "./es/opus/Decoder.js",
+        "./runtime/index.js": "./es/runtime/index.js",
+        "./runtime/Runtime.js": "./es/runtime/Runtime.js",
+        "./runtime/ResourcesHolder.js": "./es/runtime/ResourcesHolder.js",
+        "./runtime/Integer.js": "./es/runtime/Integer.js",
+        "./runtime/Buffer.js": "./es/runtime/Buffer.js"
+    }
 }

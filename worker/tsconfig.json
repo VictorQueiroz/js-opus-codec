@@ -5,5 +5,5 @@
         "types": []
     },
     "include": ["index.ts", "opus.ts"],
-    "references": [{ "path": "../actions" }]
+    "references": [{ "path": "../actions" }, { "path": "../opus" }]
 }

@@ -1,4 +1,3 @@
-import { Decoder, Encoder, RingBuffer } from 'opus-codec/opus';
 import {
     ICreateEncoder,
     IEncodeFloat,
@@ -14,10 +13,13 @@ import {
     IDestroyDecoder,
     IDestroyEncoder,
     IInitializeWorker,
-} from '../actions/actions';
-import native from 'opus-codec/native';
-import { Runtime } from 'opus-codec/runtime';
-import { getFromEncoder, setToEncoder } from './opus';
+} from '../actions/actions.js';
+import Decoder from '../opus/Decoder.js';
+import native from '../native/index.js';
+import { Runtime } from '../runtime/index.js';
+import { getFromEncoder, setToEncoder } from './opus.js';
+import Encoder from '../opus/Encoder.js';
+import { RingBufferF32 } from 'ringbud';
 
 let workerState:
     | {
@@ -31,15 +33,9 @@ let workerState:
     queue: new Set(),
 };
 
-// const pendingRuntime = native({
-//     locateFile: () => '/opus/index.wasm',
-// });
-// const encoders = new Map<CodecId, IEncoderInstance>();
-// const decoders = new Map<CodecId, Decoder>();
-
 interface IEncoderInstance {
     encoder: Encoder;
-    ringBuffer: RingBuffer;
+    ringBuffer: RingBufferF32;
     sampleRate: number;
 }
 
@@ -62,7 +58,7 @@ const onRequest = async (req: WorkerRequest) => {
                 const newWorkerState = {
                     runtime: new Runtime(
                         await native({
-                            locateFile: () => req.data.wasmFileHref,
+                            wasmFileHref: req.data.wasmFileHref,
                         })
                     ),
                     encoders: new Map(),
@@ -99,7 +95,7 @@ const onRequest = async (req: WorkerRequest) => {
             const encoderId = generateCodecId();
             encoders.set(encoderId, {
                 sampleRate: req.data.sampleRate,
-                ringBuffer: new RingBuffer(
+                ringBuffer: new RingBufferF32(
                     req.data.pcmBufferLength / Float32Array.BYTES_PER_ELEMENT
                 ),
                 encoder,
@@ -228,7 +224,7 @@ const onRequest = async (req: WorkerRequest) => {
         }
         case RequestType.DecodeFloat: {
             const decoder = decoders.get(req.data.decoderId);
-            let decoded: Float32Array | null;
+            let decoded: Float32Array<ArrayBuffer> | null;
 
             if (decoder) {
                 const decodedSamples = decoder.decodeFloat(

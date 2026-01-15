@@ -1,27 +1,11 @@
-import fs from 'fs';
-import child_process from 'child_process';
-import path from 'path';
-import CodeStream from 'codestreamjs';
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert';
+import { TextStream as CodeStream } from '@textstream/core';
+import runCommand from './runCommand.js';
 
-function runCommand(
-    cmd: string,
-    args: string[],
-    options: child_process.SpawnOptions = {}
-) {
-    return new Promise<void>((resolve, reject) => {
-        const p = child_process.spawn(cmd, args, {
-            stdio: 'inherit',
-            ...options,
-        });
-        p.on('exit', (code) => {
-            if (code !== 0) {
-                reject(new Error(`process failed with error: ${code}`));
-            } else {
-                resolve();
-            }
-        });
-    });
-}
+const currentDir = import.meta.dirname;
+const outFolder = path.resolve(currentDir, '../out');
 
 // const opusRequestConstants = new Map<string, number>([
 //     ['OPUS_SET_APPLICATION_REQUEST', 4000],
@@ -197,7 +181,7 @@ async function generateOpusGettersAndSetters() {
         );
     }
     await fs.promises.writeFile(
-        path.resolve(__dirname, '../native/opus_js_getters_and_setters.c'),
+        path.resolve(currentDir, '../native/opus_js_getters_and_setters.c'),
         cs.value()
     );
 }
@@ -215,21 +199,33 @@ async function generateOpusConstantsTsFile() {
     );
     cs.write('export default constants;\n');
     await fs.promises.writeFile(
-        path.resolve(__dirname, '../opus/constants.ts'),
+        path.resolve(currentDir, '../opus/constants.ts'),
         cs.value()
     );
 }
 
 async function compile() {
-    const buildFolder = path.resolve(__dirname, '../native/build');
+    const wasiSdkPath = process.env['WASI_SDK_PATH'] ?? null;
+    assert.strict.ok(wasiSdkPath !== null);
+
+    const buildFolder = path.resolve(currentDir, '../native/build');
     await runCommand(
-        'emcmake',
-        ['cmake', '-B', buildFolder, '-DOPUS_STACK_PROTECTOR=0'],
+        'cmake',
+        [
+            '-B',
+            buildFolder,
+            '-DOPUS_STACK_PROTECTOR=0',
+            '-DOPUS_BUILD_SHARED_LIBRARY=0',
+            '-DOPUS_BUILD_TESTING=0',
+            '-DCMAKE_BUILD_TYPE=Release',
+            '--toolchain',
+            path.resolve(wasiSdkPath, 'share', 'cmake', 'wasi-sdk.cmake'),
+        ],
         {
-            cwd: path.resolve(__dirname, '../native'),
+            cwd: path.resolve(currentDir, '../native'),
         }
     );
-    await runCommand('emmake', ['make'], {
+    await runCommand('make', [], {
         cwd: buildFolder,
     });
     const cs = new CodeStream();
@@ -245,65 +241,56 @@ async function compile() {
         '};\n'
     );
     await fs.promises.writeFile(
-        path.resolve(__dirname, '../native/opus-ts-getters-and-setters.d.ts'),
+        path.resolve(currentDir, '../native/opus-ts-getters-and-setters.d.ts'),
         cs.value()
     );
     const exportFunctions = [
-        '_size_of_int',
-        '_size_of_void_ptr',
-        '_malloc',
-        '_free',
-        '_opus_decoder_create',
-        '_opus_decoder_destroy',
-        '_opus_decode_float',
-        '_opus_encoder_create',
-        '_opus_encoder_destroy',
-        '_opus_encoder_ctl',
-        '_opus_encode_float',
+        'size_of_int',
+        'size_of_void_ptr',
+        'malloc',
+        'free',
+        'opus_decoder_create',
+        'opus_decoder_destroy',
+        'opus_decode_float',
+        'opus_encoder_create',
+        'opus_encoder_destroy',
+        'opus_encoder_ctl',
+        'opus_encode_float',
         ...Array.from(opusGettersAndSetters.keys()).map(
-            (f) => `_${f.toLowerCase()}`
+            (f) => `${f.toLowerCase()}`
         ),
     ];
-    const emscriptenArgs = [
-        'MODULARIZE=1',
-        'ENVIRONMENT=worker,node',
-        'WASM_ASYNC_COMPILATION=1',
-        `EXPORTED_FUNCTIONS=${JSON.stringify(exportFunctions)}`,
-    ];
-    await runCommand('emcc', [
+    const clang = path.resolve(wasiSdkPath, 'bin/clang');
+    await runCommand(clang, [
+        '--target=wasm32-wasi',
+        '-v',
+        ...exportFunctions.map((f) => ['-Wl', `--export=${f}`].join(',')),
+        '-o',
+        path.resolve(currentDir, '../native/index.wasm'),
+        '-Wl,--import-memory',
         path.resolve(buildFolder, 'opus/libopus.a'),
         path.resolve(buildFolder, 'libRecTimeWebWorker.a'),
-        ...emscriptenArgs.reduce(
-            (a, b) => [...a, '-s', b],
-            new Array<string>()
-        ),
         '-O3',
-        '-o',
-        path.resolve(__dirname, '../native/index.js'),
-    ]);
-    await runCommand('node', [
-        '-e',
-        `console.log(require('${path.resolve(__dirname, '../native')}'))`,
     ]);
     await runCommand('npx', [
         'tsc',
         '-b',
-        path.resolve(__dirname, '../worker'),
-        path.resolve(__dirname, '../worklet'),
-        path.resolve(__dirname, '../webpack'),
-        path.resolve(__dirname, '../actions'),
+        path.resolve(currentDir, '../worker'),
+        path.resolve(currentDir, '../worklet'),
+        path.resolve(currentDir, '../webpack'),
+        path.resolve(currentDir, '../actions'),
         '--force',
     ]);
     await runCommand('npx', [
         'webpack',
         '--config',
-        path.resolve(__dirname, '../webpack/webpack.config.js'),
+        path.resolve(currentDir, '../webpack/webpack.config.js'),
+        '--stats-error-details',
     ]);
-    const outFolder = path.resolve(__dirname, '../out');
     await runCommand('npx', [
         'tsc',
         '--project',
-        path.resolve(__dirname, '../actions'),
+        path.resolve(currentDir, '../actions'),
         '--outDir',
         outFolder,
     ]);
@@ -313,16 +300,13 @@ async function compile() {
             {
                 name: 'opus-codec-worker',
                 license: 'MIT',
-                version: (await import('../package.json')).version,
+                version: (await import('../package.json')).default.version,
                 files: ['**/*.{js,d.ts,map}'],
             },
             null,
             4
         )
     );
-    await runCommand('npm', ['publish'], {
-        cwd: outFolder,
-    });
 }
 
 const opusGettersAndSettersArgumentTypes = new Map<
@@ -469,7 +453,7 @@ async function generateWorkerActions() {
         `export type OpusSetRequest = ${[...setInterfaceNames].join(' | ')};\n`
     );
     await fs.promises.writeFile(
-        path.resolve(__dirname, '../actions/opus.ts'),
+        path.resolve(currentDir, '../actions/opus.ts'),
         cs.value()
     );
 
@@ -530,7 +514,7 @@ async function generateWorkerActions() {
         '}\n'
     );
     await fs.promises.writeFile(
-        path.resolve(__dirname, '../worker/opus.ts'),
+        path.resolve(currentDir, '../worker/opus.ts'),
         cs.value()
     );
 }
@@ -594,7 +578,7 @@ async function generateOpusGettersAndSettersClass() {
                             varName = 'x';
                         }
                         cs.write(
-                            `const result = this.#runtime.originalRuntime()._${v[0].toLowerCase()}(this.#opusEncoderOffset,${varName});\n`
+                            `const result = this.#runtime.originalRuntime().${v[0].toLowerCase()}(this.#opusEncoderOffset,${varName});\n`
                         );
                         if (isGetter) {
                         }
@@ -614,23 +598,31 @@ async function generateOpusGettersAndSettersClass() {
         '}\n'
     );
     await fs.promises.writeFile(
-        path.resolve(__dirname, '../opus/OpusGettersAndSetters.ts'),
+        path.resolve(currentDir, '../opus/OpusGettersAndSetters.ts'),
         cs.value()
     );
 }
 
+import { getArgument } from 'cli-argument-helper';
+
 (async () => {
-    for (const arg of process.argv) {
-        switch (arg) {
-            case '-g':
-                await generateWorkerActions();
-                await generateOpusGettersAndSettersClass();
-                await generateOpusConstantsTsFile();
-                await generateOpusGettersAndSetters();
-                break;
-            case '--compile':
-                await compile();
-        }
+    const args = process.argv.slice(2);
+    const generate = getArgument(args, '-g') !== null;
+    const runCompile = getArgument(args, '--compile') !== null;
+    const publishPackage = getArgument(args, '--publish') !== null;
+    if (generate) {
+        await generateWorkerActions();
+        await generateOpusGettersAndSettersClass();
+        await generateOpusConstantsTsFile();
+        await generateOpusGettersAndSetters();
+    }
+    if (runCompile) {
+        await compile();
+    }
+    if (publishPackage) {
+        await runCommand('npm', ['publish'], {
+            cwd: outFolder,
+        });
     }
 })().catch((reason) => {
     process.exitCode = 1;

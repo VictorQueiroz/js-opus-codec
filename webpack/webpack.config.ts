@@ -1,22 +1,14 @@
-import path from 'path';
-import { Configuration } from 'webpack';
+import path from 'node:path';
+import { type Configuration } from 'webpack';
 
 const configuration: Configuration[] = [
     {
         target: 'webworker',
         entry: {
-            worker: path.resolve(__dirname, '../worker'),
+            worker: path.resolve(import.meta.dirname, '../worker'),
         },
         output: {
-            path: path.resolve(__dirname, '../out'),
-        },
-        module: {
-            rules: [
-                {
-                    test: /\.wasm$/,
-                    type: 'asset/inline',
-                },
-            ],
+            path: path.resolve(import.meta.dirname, '../out'),
         },
         resolve: {
             fallback: {
@@ -24,16 +16,32 @@ const configuration: Configuration[] = [
                 fs: false,
             },
         },
+        module: {
+            rules: [
+                {
+                    test: /\.wasm$/,
+                    type: 'asset/resource',
+                },
+            ],
+        },
         mode: 'production',
     },
     {
         mode: 'production',
         target: 'webworker',
         entry: {
-            worklet: path.resolve(__dirname, '../worklet'),
+            worklet: path.resolve(import.meta.dirname, '../worklet'),
+        },
+        module: {
+            rules: [
+                {
+                    test: /\.wasm$/,
+                    type: 'asset/resource',
+                },
+            ],
         },
         output: {
-            path: path.resolve(__dirname, '../out/worklet'),
+            path: path.resolve(import.meta.dirname, '../out/worklet'),
         },
     },
 ];

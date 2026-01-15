@@ -1,4 +1,4 @@
-import { OpusGetRequest, OpusSetRequest } from './opus';
+import { OpusGetRequest, OpusSetRequest } from './opus.js';
 
 export interface IWorkerRequest<Data, Response> {
     data: Data;
@@ -200,7 +200,7 @@ export interface IEncodeFloatOptions {
      * that has been queued
      */
     input: {
-        pcm: Float32Array;
+        pcm: Float32Array<ArrayBuffer>;
     } | null;
 }
 
@@ -237,6 +237,6 @@ export function encodeFloat(data: IEncodeFloatOptions): IEncodeFloat {
         data,
         requestId: getRequestId(),
         type: RequestType.EncodeFloat,
-        transfer: data.input !== null ? [data.input.pcm] : [],
+        transfer: data.input !== null ? [data.input.pcm.buffer] : [],
     };
 }

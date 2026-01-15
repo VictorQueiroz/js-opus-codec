@@ -1,4 +1,4 @@
-import { Runtime, Integer, ResourcesHolder, Buffer } from '../runtime';
+import { Runtime, Integer, ResourcesHolder, Buffer } from '../runtime/index.js';
 
 export default class Decoder {
     readonly #error;
@@ -26,7 +26,7 @@ export default class Decoder {
          */
         this.#decoder = runtime
             .originalRuntime()
-            ._opus_decoder_create(sampleRate, channels, this.#error.offset());
+            .opus_decoder_create(sampleRate, channels, this.#error.offset());
         if (!this.#decoder || this.#error.value() < 0) {
             throw new Error('Failed to create decoder');
         }
@@ -63,7 +63,7 @@ export default class Decoder {
          */
         const decodedSamples = this.#runtime
             .originalRuntime()
-            ._opus_decode_float(
+            .opus_decode_float(
                 this.#decoder,
                 data.offset(),
                 value.byteLength,
@@ -85,7 +85,7 @@ export default class Decoder {
         );
     }
     public destroy() {
-        this.#runtime.originalRuntime()._opus_decoder_destroy(this.#decoder);
+        this.#runtime.originalRuntime().opus_decoder_destroy(this.#decoder);
         this.#holder.destroy();
         this.#data?.destroy();
     }

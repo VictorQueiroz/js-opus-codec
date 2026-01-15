@@ -1,21 +1,112 @@
+async function createModule({ wasmFileHref } = {}) {
+    const memory = new WebAssembly.Memory({ initial: 256, maximum: 512 });
+    const importObject = {
+        env: {
+            memory,
+        },
+        wasi_snapshot_preview1: {
+            args_get: () => {},
+            args_sizes_get: () => {},
+            environ_get: () => {},
+            environ_sizes_get: () => {},
+            fd_close: () => {},
+            fd_fdstat_get: () => {},
+            fd_read: () => {},
+            fd_seek: () => {},
+            fd_write: () => {},
+            proc_exit: () => {},
+            random_get: () => {},
+            clock_res_get: () => {},
+            clock_time_get: () => {},
+            fd_advise: () => {},
+            fd_allocate: () => {},
+            fd_datasync: () => {},
+            fd_fdstat_set_flags: () => {},
+            fd_fdstat_set_rights: () => {},
+            fd_filestat_get: () => {},
+            fd_filestat_set_size: () => {},
+            fd_filestat_set_times: () => {},
+            fd_pread: () => {},
+            fd_prestat_get: () => {},
+            fd_prestat_dir_name: () => {},
+            fd_pwrite: () => {},
+            fd_readdir: () => {},
+            fd_renumber: () => {},
+            fd_sync: () => {},
+            fd_tell: () => {},
+            path_create_directory: () => {},
+            path_filestat_get: () => {},
+            path_filestat_set_times: () => {},
+            path_link: () => {},
+            path_open: () => {},
+            path_readlink: () => {},
+            path_remove_directory: () => {},
+            path_rename: () => {},
+            path_symlink: () => {},
+            path_unlink_file: () => {},
+            poll_oneoff: () => {},
+            sched_yield: () => {},
+            sock_accept: () => {},
+            sock_recv: () => {},
+            sock_send: () => {},
+            sock_shutdown: () => {},
+        },
+    };
 
-var Module = (() => {
-  var _scriptDir = typeof document !== 'undefined' && document.currentScript ? document.currentScript.src : undefined;
-  if (typeof __filename !== 'undefined') _scriptDir = _scriptDir || __filename;
-  return (
-function(Module = {})  {
+    let pendingWebAssemblyInstantiateSource;
+    if ('process' in globalThis) {
+        const fs = await import('fs');
+        const path = await import('path');
+        const wasmPath = path.resolve(import.meta.dirname, 'index.wasm');
+        const wasmBinary = await fs.promises.readFile(wasmPath);
+        pendingWebAssemblyInstantiateSource = WebAssembly.instantiate(
+            wasmBinary,
+            importObject
+        );
+    } else {
+        if (typeof wasmFileHref !== 'string') {
+            const wasmBinaryUrl = await import('./index.wasm');
+            wasmFileHref = wasmBinaryUrl.default;
+        }
 
-var Module=typeof Module!="undefined"?Module:{};var readyPromiseResolve,readyPromiseReject;Module["ready"]=new Promise(function(resolve,reject){readyPromiseResolve=resolve;readyPromiseReject=reject});var moduleOverrides=Object.assign({},Module);var arguments_=[];var thisProgram="./this.program";var quit_=(status,toThrow)=>{throw toThrow};var ENVIRONMENT_IS_WEB=typeof window=="object";var ENVIRONMENT_IS_WORKER=typeof importScripts=="function";var ENVIRONMENT_IS_NODE=typeof process=="object"&&typeof process.versions=="object"&&typeof process.versions.node=="string";var scriptDirectory="";function locateFile(path){if(Module["locateFile"]){return Module["locateFile"](path,scriptDirectory)}return scriptDirectory+path}var read_,readAsync,readBinary,setWindowTitle;if(ENVIRONMENT_IS_NODE){var fs=require("fs");var nodePath=require("path");if(ENVIRONMENT_IS_WORKER){scriptDirectory=nodePath.dirname(scriptDirectory)+"/"}else{scriptDirectory=__dirname+"/"}read_=(filename,binary)=>{filename=isFileURI(filename)?new URL(filename):nodePath.normalize(filename);return fs.readFileSync(filename,binary?undefined:"utf8")};readBinary=filename=>{var ret=read_(filename,true);if(!ret.buffer){ret=new Uint8Array(ret)}return ret};readAsync=(filename,onload,onerror)=>{filename=isFileURI(filename)?new URL(filename):nodePath.normalize(filename);fs.readFile(filename,function(err,data){if(err)onerror(err);else onload(data.buffer)})};if(process.argv.length>1){thisProgram=process.argv[1].replace(/\\/g,"/")}arguments_=process.argv.slice(2);quit_=(status,toThrow)=>{process.exitCode=status;throw toThrow};Module["inspect"]=function(){return"[Emscripten Module object]"}}else if(ENVIRONMENT_IS_WEB||ENVIRONMENT_IS_WORKER){if(ENVIRONMENT_IS_WORKER){scriptDirectory=self.location.href}else if(typeof document!="undefined"&&document.currentScript){scriptDirectory=document.currentScript.src}if(_scriptDir){scriptDirectory=_scriptDir}if(scriptDirectory.indexOf("blob:")!==0){scriptDirectory=scriptDirectory.substr(0,scriptDirectory.replace(/[?#].*/,"").lastIndexOf("/")+1)}else{scriptDirectory=""}{read_=url=>{var xhr=new XMLHttpRequest;xhr.open("GET",url,false);xhr.send(null);return xhr.responseText};if(ENVIRONMENT_IS_WORKER){readBinary=url=>{var xhr=new XMLHttpRequest;xhr.open("GET",url,false);xhr.responseType="arraybuffer";xhr.send(null);return new Uint8Array(xhr.response)}}readAsync=(url,onload,onerror)=>{var xhr=new XMLHttpRequest;xhr.open("GET",url,true);xhr.responseType="arraybuffer";xhr.onload=()=>{if(xhr.status==200||xhr.status==0&&xhr.response){onload(xhr.response);return}onerror()};xhr.onerror=onerror;xhr.send(null)}}setWindowTitle=title=>document.title=title}else{}var out=Module["print"]||console.log.bind(console);var err=Module["printErr"]||console.warn.bind(console);Object.assign(Module,moduleOverrides);moduleOverrides=null;if(Module["arguments"])arguments_=Module["arguments"];if(Module["thisProgram"])thisProgram=Module["thisProgram"];if(Module["quit"])quit_=Module["quit"];var wasmBinary;if(Module["wasmBinary"])wasmBinary=Module["wasmBinary"];var noExitRuntime=Module["noExitRuntime"]||true;if(typeof WebAssembly!="object"){abort("no native wasm support detected")}var wasmMemory;var ABORT=false;var EXITSTATUS;var UTF8Decoder=typeof TextDecoder!="undefined"?new TextDecoder("utf8"):undefined;function UTF8ArrayToString(heapOrArray,idx,maxBytesToRead){var endIdx=idx+maxBytesToRead;var endPtr=idx;while(heapOrArray[endPtr]&&!(endPtr>=endIdx))++endPtr;if(endPtr-idx>16&&heapOrArray.buffer&&UTF8Decoder){return UTF8Decoder.decode(heapOrArray.subarray(idx,endPtr))}var str="";while(idx<endPtr){var u0=heapOrArray[idx++];if(!(u0&128)){str+=String.fromCharCode(u0);continue}var u1=heapOrArray[idx++]&63;if((u0&224)==192){str+=String.fromCharCode((u0&31)<<6|u1);continue}var u2=heapOrArray[idx++]&63;if((u0&240)==224){u0=(u0&15)<<12|u1<<6|u2}else{u0=(u0&7)<<18|u1<<12|u2<<6|heapOrArray[idx++]&63}if(u0<65536){str+=String.fromCharCode(u0)}else{var ch=u0-65536;str+=String.fromCharCode(55296|ch>>10,56320|ch&1023)}}return str}function UTF8ToString(ptr,maxBytesToRead){return ptr?UTF8ArrayToString(HEAPU8,ptr,maxBytesToRead):""}var HEAP8,HEAPU8,HEAP16,HEAPU16,HEAP32,HEAPU32,HEAPF32,HEAPF64;function updateMemoryViews(){var b=wasmMemory.buffer;Module["HEAP8"]=HEAP8=new Int8Array(b);Module["HEAP16"]=HEAP16=new Int16Array(b);Module["HEAP32"]=HEAP32=new Int32Array(b);Module["HEAPU8"]=HEAPU8=new Uint8Array(b);Module["HEAPU16"]=HEAPU16=new Uint16Array(b);Module["HEAPU32"]=HEAPU32=new Uint32Array(b);Module["HEAPF32"]=HEAPF32=new Float32Array(b);Module["HEAPF64"]=HEAPF64=new Float64Array(b)}var wasmTable;var __ATPRERUN__=[];var __ATINIT__=[];var __ATPOSTRUN__=[];var runtimeInitialized=false;function preRun(){if(Module["preRun"]){if(typeof Module["preRun"]=="function")Module["preRun"]=[Module["preRun"]];while(Module["preRun"].length){addOnPreRun(Module["preRun"].shift())}}callRuntimeCallbacks(__ATPRERUN__)}function initRuntime(){runtimeInitialized=true;callRuntimeCallbacks(__ATINIT__)}function postRun(){if(Module["postRun"]){if(typeof Module["postRun"]=="function")Module["postRun"]=[Module["postRun"]];while(Module["postRun"].length){addOnPostRun(Module["postRun"].shift())}}callRuntimeCallbacks(__ATPOSTRUN__)}function addOnPreRun(cb){__ATPRERUN__.unshift(cb)}function addOnInit(cb){__ATINIT__.unshift(cb)}function addOnPostRun(cb){__ATPOSTRUN__.unshift(cb)}var runDependencies=0;var runDependencyWatcher=null;var dependenciesFulfilled=null;function addRunDependency(id){runDependencies++;if(Module["monitorRunDependencies"]){Module["monitorRunDependencies"](runDependencies)}}function removeRunDependency(id){runDependencies--;if(Module["monitorRunDependencies"]){Module["monitorRunDependencies"](runDependencies)}if(runDependencies==0){if(runDependencyWatcher!==null){clearInterval(runDependencyWatcher);runDependencyWatcher=null}if(dependenciesFulfilled){var callback=dependenciesFulfilled;dependenciesFulfilled=null;callback()}}}function abort(what){if(Module["onAbort"]){Module["onAbort"](what)}what="Aborted("+what+")";err(what);ABORT=true;EXITSTATUS=1;what+=". Build with -sASSERTIONS for more info.";var e=new WebAssembly.RuntimeError(what);readyPromiseReject(e);throw e}var dataURIPrefix="data:application/octet-stream;base64,";function isDataURI(filename){return filename.startsWith(dataURIPrefix)}function isFileURI(filename){return filename.startsWith("file://")}var wasmBinaryFile;wasmBinaryFile="index.wasm";if(!isDataURI(wasmBinaryFile)){wasmBinaryFile=locateFile(wasmBinaryFile)}function getBinary(file){try{if(file==wasmBinaryFile&&wasmBinary){return new Uint8Array(wasmBinary)}if(readBinary){return readBinary(file)}throw"both async and sync fetching of the wasm failed"}catch(err){abort(err)}}function getBinaryPromise(binaryFile){if(!wasmBinary&&(ENVIRONMENT_IS_WEB||ENVIRONMENT_IS_WORKER)){if(typeof fetch=="function"){return fetch(binaryFile,{credentials:"same-origin"}).then(function(response){if(!response["ok"]){throw"failed to load wasm binary file at '"+binaryFile+"'"}return response["arrayBuffer"]()}).catch(function(){return getBinary(binaryFile)})}}return Promise.resolve().then(function(){return getBinary(binaryFile)})}function instantiateArrayBuffer(binaryFile,imports,receiver){return getBinaryPromise(binaryFile).then(function(binary){return WebAssembly.instantiate(binary,imports)}).then(function(instance){return instance}).then(receiver,function(reason){err("failed to asynchronously prepare wasm: "+reason);abort(reason)})}function instantiateAsync(binary,binaryFile,imports,callback){if(!binary&&typeof WebAssembly.instantiateStreaming=="function"&&!isDataURI(binaryFile)&&!ENVIRONMENT_IS_NODE&&typeof fetch=="function"){return fetch(binaryFile,{credentials:"same-origin"}).then(function(response){var result=WebAssembly.instantiateStreaming(response,imports);return result.then(callback,function(reason){err("wasm streaming compile failed: "+reason);err("falling back to ArrayBuffer instantiation");return instantiateArrayBuffer(binaryFile,imports,callback)})})}else{return instantiateArrayBuffer(binaryFile,imports,callback)}}function createWasm(){var info={"a":wasmImports};function receiveInstance(instance,module){var exports=instance.exports;Module["asm"]=exports;wasmMemory=Module["asm"]["g"];updateMemoryViews();wasmTable=Module["asm"]["ea"];addOnInit(Module["asm"]["h"]);removeRunDependency("wasm-instantiate");return exports}addRunDependency("wasm-instantiate");function receiveInstantiationResult(result){receiveInstance(result["instance"])}if(Module["instantiateWasm"]){try{return Module["instantiateWasm"](info,receiveInstance)}catch(e){err("Module.instantiateWasm callback failed with error: "+e);readyPromiseReject(e)}}instantiateAsync(wasmBinary,wasmBinaryFile,info,receiveInstantiationResult).catch(readyPromiseReject);return{}}function callRuntimeCallbacks(callbacks){while(callbacks.length>0){callbacks.shift()(Module)}}function _abort(){abort("")}function _emscripten_memcpy_big(dest,src,num){HEAPU8.copyWithin(dest,src,src+num)}function abortOnCannotGrowMemory(requestedSize){abort("OOM")}function _emscripten_resize_heap(requestedSize){var oldSize=HEAPU8.length;requestedSize=requestedSize>>>0;abortOnCannotGrowMemory(requestedSize)}var SYSCALLS={varargs:undefined,get:function(){SYSCALLS.varargs+=4;var ret=HEAP32[SYSCALLS.varargs-4>>2];return ret},getStr:function(ptr){var ret=UTF8ToString(ptr);return ret}};function _fd_close(fd){return 52}function _fd_seek(fd,offset_low,offset_high,whence,newOffset){return 70}var printCharBuffers=[null,[],[]];function printChar(stream,curr){var buffer=printCharBuffers[stream];if(curr===0||curr===10){(stream===1?out:err)(UTF8ArrayToString(buffer,0));buffer.length=0}else{buffer.push(curr)}}function _fd_write(fd,iov,iovcnt,pnum){var num=0;for(var i=0;i<iovcnt;i++){var ptr=HEAPU32[iov>>2];var len=HEAPU32[iov+4>>2];iov+=8;for(var j=0;j<len;j++){printChar(fd,HEAPU8[ptr+j])}num+=len}HEAPU32[pnum>>2]=num;return 0}var wasmImports={"d":_abort,"f":_emscripten_memcpy_big,"c":_emscripten_resize_heap,"e":_fd_close,"b":_fd_seek,"a":_fd_write};var asm=createWasm();var ___wasm_call_ctors=function(){return(___wasm_call_ctors=Module["asm"]["h"]).apply(null,arguments)};var _opus_decoder_create=Module["_opus_decoder_create"]=function(){return(_opus_decoder_create=Module["_opus_decoder_create"]=Module["asm"]["i"]).apply(null,arguments)};var _opus_decode_float=Module["_opus_decode_float"]=function(){return(_opus_decode_float=Module["_opus_decode_float"]=Module["asm"]["j"]).apply(null,arguments)};var _opus_decoder_destroy=Module["_opus_decoder_destroy"]=function(){return(_opus_decoder_destroy=Module["_opus_decoder_destroy"]=Module["asm"]["k"]).apply(null,arguments)};var _opus_encoder_create=Module["_opus_encoder_create"]=function(){return(_opus_encoder_create=Module["_opus_encoder_create"]=Module["asm"]["l"]).apply(null,arguments)};var _opus_encode_float=Module["_opus_encode_float"]=function(){return(_opus_encode_float=Module["_opus_encode_float"]=Module["asm"]["m"]).apply(null,arguments)};var _opus_encoder_ctl=Module["_opus_encoder_ctl"]=function(){return(_opus_encoder_ctl=Module["_opus_encoder_ctl"]=Module["asm"]["n"]).apply(null,arguments)};var _opus_encoder_destroy=Module["_opus_encoder_destroy"]=function(){return(_opus_encoder_destroy=Module["_opus_encoder_destroy"]=Module["asm"]["o"]).apply(null,arguments)};var _size_of_int=Module["_size_of_int"]=function(){return(_size_of_int=Module["_size_of_int"]=Module["asm"]["p"]).apply(null,arguments)};var _size_of_void_ptr=Module["_size_of_void_ptr"]=function(){return(_size_of_void_ptr=Module["_size_of_void_ptr"]=Module["asm"]["q"]).apply(null,arguments)};var _opus_set_complexity=Module["_opus_set_complexity"]=function(){return(_opus_set_complexity=Module["_opus_set_complexity"]=Module["asm"]["r"]).apply(null,arguments)};var _opus_get_complexity=Module["_opus_get_complexity"]=function(){return(_opus_get_complexity=Module["_opus_get_complexity"]=Module["asm"]["s"]).apply(null,arguments)};var _opus_set_bitrate=Module["_opus_set_bitrate"]=function(){return(_opus_set_bitrate=Module["_opus_set_bitrate"]=Module["asm"]["t"]).apply(null,arguments)};var _opus_get_bitrate=Module["_opus_get_bitrate"]=function(){return(_opus_get_bitrate=Module["_opus_get_bitrate"]=Module["asm"]["u"]).apply(null,arguments)};var _opus_set_vbr=Module["_opus_set_vbr"]=function(){return(_opus_set_vbr=Module["_opus_set_vbr"]=Module["asm"]["v"]).apply(null,arguments)};var _opus_get_vbr=Module["_opus_get_vbr"]=function(){return(_opus_get_vbr=Module["_opus_get_vbr"]=Module["asm"]["w"]).apply(null,arguments)};var _opus_set_vbr_constraint=Module["_opus_set_vbr_constraint"]=function(){return(_opus_set_vbr_constraint=Module["_opus_set_vbr_constraint"]=Module["asm"]["x"]).apply(null,arguments)};var _opus_get_vbr_constraint=Module["_opus_get_vbr_constraint"]=function(){return(_opus_get_vbr_constraint=Module["_opus_get_vbr_constraint"]=Module["asm"]["y"]).apply(null,arguments)};var _opus_set_force_channels=Module["_opus_set_force_channels"]=function(){return(_opus_set_force_channels=Module["_opus_set_force_channels"]=Module["asm"]["z"]).apply(null,arguments)};var _opus_get_force_channels=Module["_opus_get_force_channels"]=function(){return(_opus_get_force_channels=Module["_opus_get_force_channels"]=Module["asm"]["A"]).apply(null,arguments)};var _opus_set_max_bandwidth=Module["_opus_set_max_bandwidth"]=function(){return(_opus_set_max_bandwidth=Module["_opus_set_max_bandwidth"]=Module["asm"]["B"]).apply(null,arguments)};var _opus_get_max_bandwidth=Module["_opus_get_max_bandwidth"]=function(){return(_opus_get_max_bandwidth=Module["_opus_get_max_bandwidth"]=Module["asm"]["C"]).apply(null,arguments)};var _opus_set_bandwidth=Module["_opus_set_bandwidth"]=function(){return(_opus_set_bandwidth=Module["_opus_set_bandwidth"]=Module["asm"]["D"]).apply(null,arguments)};var _opus_set_signal=Module["_opus_set_signal"]=function(){return(_opus_set_signal=Module["_opus_set_signal"]=Module["asm"]["E"]).apply(null,arguments)};var _opus_get_signal=Module["_opus_get_signal"]=function(){return(_opus_get_signal=Module["_opus_get_signal"]=Module["asm"]["F"]).apply(null,arguments)};var _opus_set_application=Module["_opus_set_application"]=function(){return(_opus_set_application=Module["_opus_set_application"]=Module["asm"]["G"]).apply(null,arguments)};var _opus_get_application=Module["_opus_get_application"]=function(){return(_opus_get_application=Module["_opus_get_application"]=Module["asm"]["H"]).apply(null,arguments)};var _opus_get_lookahead=Module["_opus_get_lookahead"]=function(){return(_opus_get_lookahead=Module["_opus_get_lookahead"]=Module["asm"]["I"]).apply(null,arguments)};var _opus_set_inband_fec=Module["_opus_set_inband_fec"]=function(){return(_opus_set_inband_fec=Module["_opus_set_inband_fec"]=Module["asm"]["J"]).apply(null,arguments)};var _opus_get_inband_fec=Module["_opus_get_inband_fec"]=function(){return(_opus_get_inband_fec=Module["_opus_get_inband_fec"]=Module["asm"]["K"]).apply(null,arguments)};var _opus_set_packet_loss_perc=Module["_opus_set_packet_loss_perc"]=function(){return(_opus_set_packet_loss_perc=Module["_opus_set_packet_loss_perc"]=Module["asm"]["L"]).apply(null,arguments)};var _opus_get_packet_loss_perc=Module["_opus_get_packet_loss_perc"]=function(){return(_opus_get_packet_loss_perc=Module["_opus_get_packet_loss_perc"]=Module["asm"]["M"]).apply(null,arguments)};var _opus_set_dtx=Module["_opus_set_dtx"]=function(){return(_opus_set_dtx=Module["_opus_set_dtx"]=Module["asm"]["N"]).apply(null,arguments)};var _opus_get_dtx=Module["_opus_get_dtx"]=function(){return(_opus_get_dtx=Module["_opus_get_dtx"]=Module["asm"]["O"]).apply(null,arguments)};var _opus_set_lsb_depth=Module["_opus_set_lsb_depth"]=function(){return(_opus_set_lsb_depth=Module["_opus_set_lsb_depth"]=Module["asm"]["P"]).apply(null,arguments)};var _opus_get_lsb_depth=Module["_opus_get_lsb_depth"]=function(){return(_opus_get_lsb_depth=Module["_opus_get_lsb_depth"]=Module["asm"]["Q"]).apply(null,arguments)};var _opus_set_expert_frame_duration=Module["_opus_set_expert_frame_duration"]=function(){return(_opus_set_expert_frame_duration=Module["_opus_set_expert_frame_duration"]=Module["asm"]["R"]).apply(null,arguments)};var _opus_get_expert_frame_duration=Module["_opus_get_expert_frame_duration"]=function(){return(_opus_get_expert_frame_duration=Module["_opus_get_expert_frame_duration"]=Module["asm"]["S"]).apply(null,arguments)};var _opus_set_prediction_disabled=Module["_opus_set_prediction_disabled"]=function(){return(_opus_set_prediction_disabled=Module["_opus_set_prediction_disabled"]=Module["asm"]["T"]).apply(null,arguments)};var _opus_get_prediction_disabled=Module["_opus_get_prediction_disabled"]=function(){return(_opus_get_prediction_disabled=Module["_opus_get_prediction_disabled"]=Module["asm"]["U"]).apply(null,arguments)};var _opus_get_bandwidth=Module["_opus_get_bandwidth"]=function(){return(_opus_get_bandwidth=Module["_opus_get_bandwidth"]=Module["asm"]["V"]).apply(null,arguments)};var _opus_get_sample_rate=Module["_opus_get_sample_rate"]=function(){return(_opus_get_sample_rate=Module["_opus_get_sample_rate"]=Module["asm"]["W"]).apply(null,arguments)};var _opus_set_phase_inversion_disabled=Module["_opus_set_phase_inversion_disabled"]=function(){return(_opus_set_phase_inversion_disabled=Module["_opus_set_phase_inversion_disabled"]=Module["asm"]["X"]).apply(null,arguments)};var _opus_get_phase_inversion_disabled=Module["_opus_get_phase_inversion_disabled"]=function(){return(_opus_get_phase_inversion_disabled=Module["_opus_get_phase_inversion_disabled"]=Module["asm"]["Y"]).apply(null,arguments)};var _opus_get_in_dtx=Module["_opus_get_in_dtx"]=function(){return(_opus_get_in_dtx=Module["_opus_get_in_dtx"]=Module["asm"]["Z"]).apply(null,arguments)};var _opus_set_gain=Module["_opus_set_gain"]=function(){return(_opus_set_gain=Module["_opus_set_gain"]=Module["asm"]["_"]).apply(null,arguments)};var _opus_get_gain=Module["_opus_get_gain"]=function(){return(_opus_get_gain=Module["_opus_get_gain"]=Module["asm"]["$"]).apply(null,arguments)};var _opus_get_last_packet_duration=Module["_opus_get_last_packet_duration"]=function(){return(_opus_get_last_packet_duration=Module["_opus_get_last_packet_duration"]=Module["asm"]["aa"]).apply(null,arguments)};var _opus_get_pitch=Module["_opus_get_pitch"]=function(){return(_opus_get_pitch=Module["_opus_get_pitch"]=Module["asm"]["ba"]).apply(null,arguments)};var ___errno_location=function(){return(___errno_location=Module["asm"]["__errno_location"]).apply(null,arguments)};var _malloc=Module["_malloc"]=function(){return(_malloc=Module["_malloc"]=Module["asm"]["ca"]).apply(null,arguments)};var _free=Module["_free"]=function(){return(_free=Module["_free"]=Module["asm"]["da"]).apply(null,arguments)};var calledRun;dependenciesFulfilled=function runCaller(){if(!calledRun)run();if(!calledRun)dependenciesFulfilled=runCaller};function run(){if(runDependencies>0){return}preRun();if(runDependencies>0){return}function doRun(){if(calledRun)return;calledRun=true;Module["calledRun"]=true;if(ABORT)return;initRuntime();readyPromiseResolve(Module);if(Module["onRuntimeInitialized"])Module["onRuntimeInitialized"]();postRun()}if(Module["setStatus"]){Module["setStatus"]("Running...");setTimeout(function(){setTimeout(function(){Module["setStatus"]("")},1);doRun()},1)}else{doRun()}}if(Module["preInit"]){if(typeof Module["preInit"]=="function")Module["preInit"]=[Module["preInit"]];while(Module["preInit"].length>0){Module["preInit"].pop()()}}run();
+        if (typeof wasmFileHref !== 'string') {
+            throw new Error('Invalid wasmFileHref');
+        }
 
+        const response = await fetch(wasmFileHref);
+        pendingWebAssemblyInstantiateSource =
+            await WebAssembly.instantiateStreaming(response, importObject);
+    }
 
-  return Module.ready
+    const webAssemblyInstantiatedSource =
+        await pendingWebAssemblyInstantiateSource;
+
+    return {
+        ...webAssemblyInstantiatedSource.instance.exports,
+        memory,
+    };
 }
 
-);
-})();
-if (typeof exports === 'object' && typeof module === 'object')
-  module.exports = Module;
-else if (typeof define === 'function' && define['amd'])
-  define([], function() { return Module; });
-else if (typeof exports === 'object')
-  exports["Module"] = Module;
+(async () => {
+    const wasmRuntime = await createModule();
+    console.log(wasmRuntime);
+    const { default: Encoder } = await import('../opus/Encoder.js');
+    const { Runtime } = await import('../runtime/index.js');
+    const runtime = new Runtime(wasmRuntime);
+    const input = new Float32Array(2880);
+    const encoder = new Encoder(
+        runtime,
+        48000,
+        1,
+        2048,
+        10000,
+        2880 * Float32Array.BYTES_PER_ELEMENT
+    );
+    const output = encoder.encodeFloat(input, 2880, 10000);
+    console.log('Encoded output length:', output);
+    encoder.destroy();
+})().catch((err) => {
+    console.error(err);
+});
+
+export default createModule;

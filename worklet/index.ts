@@ -1,25 +1,9 @@
-import { boundMethod } from 'autobind-decorator';
-import { RingBuffer } from 'opus-codec/opus';
+import { RingBufferF32 } from 'ringbud';
 
 type Channels = Float32Array[];
 
-declare abstract class AudioWorkletProcessor {
-    port: MessagePort;
-    constructor(...args: unknown[]);
-    abstract process(
-        inputList: Channels[],
-        outputList: Channels[],
-        parameters: Record<string, Float32Array>
-    ): boolean;
-}
-
-declare const registerProcessor: (
-    name: string,
-    value: new () => AudioWorkletProcessor
-) => void;
-
 class DefaultAudioProcessor extends AudioWorkletProcessor {
-    #ringBuffer: RingBuffer | null = null;
+    #ringBuffer: RingBufferF32 | null = null;
     #shouldContinue = true;
 
     static get parameterDescriptors() {
@@ -33,8 +17,8 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
         ];
     }
 
-    public constructor(...args: unknown[]) {
-        super(args);
+    public constructor() {
+        super();
         this.port.addEventListener('message', this.onMessage);
         this.port.start();
     }
@@ -45,9 +29,8 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
         parameters: Record<string, Float32Array>
     ) {
         const frameSize = parameters['frameSize'][0];
-        const debug = parameters['debug'][0] ? true : false;
         if (!this.#ringBuffer) {
-            this.#ringBuffer = new RingBuffer(frameSize);
+            this.#ringBuffer = new RingBufferF32(frameSize);
         }
 
         if (!inputList.length) {
@@ -63,22 +46,16 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
                 break;
             }
 
+            // for now, get just the first channel
             this.#ringBuffer.write(inputChannel[0]);
 
             const samples = this.#ringBuffer.read();
 
-            if (samples) {
-                if (debug) {
-                    console.log(
-                        'read %d samples out from ring buffer',
-                        samples.length
-                    );
-                }
+            if (samples !== null) {
                 this.port.postMessage({
                     samples,
                 });
             }
-            // for now, get just the first channel
             break;
         }
 
@@ -96,11 +73,11 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
 
         return this.#shouldContinue;
     }
-    @boundMethod private onMessage(e: MessageEvent) {
+    private onMessage = (e: MessageEvent) => {
         if (e.data && e.data.stop) {
             this.#shouldContinue = false;
         }
-    }
+    };
 }
 
 registerProcessor('default-audio-processor', DefaultAudioProcessor);
