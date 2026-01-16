@@ -1,13 +1,8 @@
-import {
-    OpusGetRequest,
-    OpusRequest,
-    OpusSetRequest,
-} from '../actions/opus.js';
-import Encoder from '../opus/Encoder.js';
-
-export function setToEncoder(encoder: Encoder, request: OpusSetRequest) {
+import {OpusGetRequest,OpusRequest,OpusSetRequest} from '../actions/opus.js';
+import {Encoder} from '../opus/index.js';
+export function setToEncoder(encoder: Encoder, request: OpusSetRequest){
     let result: boolean;
-    switch (request.type) {
+    switch(request.type) {
         case OpusRequest.SetComplexity:
             result = encoder.setComplexity(request.value);
             break;
@@ -62,9 +57,9 @@ export function setToEncoder(encoder: Encoder, request: OpusSetRequest) {
     }
     return result;
 }
-export function getFromEncoder(encoder: Encoder, request: OpusGetRequest) {
+export function getFromEncoder(encoder: Encoder, request: OpusGetRequest){
     let result: number;
-    switch (request.type) {
+    switch(request.type) {
         case OpusRequest.GetComplexity:
             result = encoder.getComplexity();
             break;

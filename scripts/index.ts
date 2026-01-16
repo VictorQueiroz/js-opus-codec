@@ -173,16 +173,16 @@ async function generateOpusGettersAndSetters() {
             () => {
                 cs.write(
                     `return opus_encoder_ctl(enc,${c[0]}(${c[1].arguments.join(
-                        ', '
-                    )}));\n`
+                        ', ',
+                    )}));\n`,
                 );
             },
-            '}\n'
+            '}\n',
         );
     }
     await fs.promises.writeFile(
         path.resolve(currentDir, '../native/opus_js_getters_and_setters.c'),
-        cs.value()
+        cs.value(),
     );
 }
 
@@ -195,12 +195,12 @@ async function generateOpusConstantsTsFile() {
                 cs.write(`'${c[0]}': ${c[1]},\n`);
             }
         },
-        '};\n'
+        '};\n',
     );
     cs.write('export default constants;\n');
     await fs.promises.writeFile(
         path.resolve(currentDir, '../opus/constants.ts'),
-        cs.value()
+        cs.value(),
     );
 }
 
@@ -223,7 +223,7 @@ async function compile() {
         ],
         {
             cwd: path.resolve(currentDir, '../native'),
-        }
+        },
     );
     await runCommand('make', [], {
         cwd: buildFolder,
@@ -234,15 +234,15 @@ async function compile() {
         () => {
             for (const getterAndSetter of opusGettersAndSetters) {
                 cs.write(
-                    `_${getterAndSetter[0].toLowerCase()}(enc: number,value: number): number;\n`
+                    `${getterAndSetter[0].toLowerCase()}(enc: number,value: number): number;\n`,
                 );
             }
         },
-        '};\n'
+        '};\n',
     );
     await fs.promises.writeFile(
         path.resolve(currentDir, '../native/opus-ts-getters-and-setters.d.ts'),
-        cs.value()
+        cs.value(),
     );
     const exportFunctions = [
         'size_of_int',
@@ -257,7 +257,7 @@ async function compile() {
         'opus_encoder_ctl',
         'opus_encode_float',
         ...Array.from(opusGettersAndSetters.keys()).map(
-            (f) => `${f.toLowerCase()}`
+            (f) => `${f.toLowerCase()}`,
         ),
     ];
     const clang = path.resolve(wasiSdkPath, 'bin/clang');
@@ -304,8 +304,8 @@ async function compile() {
                 files: ['**/*.{js,d.ts,map}'],
             },
             null,
-            4
-        )
+            4,
+        ),
     );
 }
 
@@ -400,7 +400,7 @@ async function generateWorkerActions() {
                 cs.write(`${getEnumName(v[0])} = '${v[0]}',\n`);
             }
         },
-        '}\n'
+        '}\n',
     );
     const getInterfaceNames = new Set<string>();
     const setInterfaceNames = new Set<string>();
@@ -422,7 +422,7 @@ async function generateWorkerActions() {
                     cs.write(`value: number;\n`);
                 }
             },
-            '}\n'
+            '}\n',
         );
         cs.write(
             `export function ${v[0]}(encoderId: string,${
@@ -440,27 +440,27 @@ async function generateWorkerActions() {
                             cs.write(`value: x\n`);
                         }
                     },
-                    '};\n'
+                    '};\n',
                 );
             },
-            '}\n'
+            '}\n',
         );
     }
     cs.write(
-        `export type OpusGetRequest = ${[...getInterfaceNames].join(' | ')};\n`
+        `export type OpusGetRequest = ${[...getInterfaceNames].join(' | ')};\n`,
     );
     cs.write(
-        `export type OpusSetRequest = ${[...setInterfaceNames].join(' | ')};\n`
+        `export type OpusSetRequest = ${[...setInterfaceNames].join(' | ')};\n`,
     );
     await fs.promises.writeFile(
         path.resolve(currentDir, '../actions/opus.ts'),
-        cs.value()
+        cs.value(),
     );
 
     cs.write(
-        `import {OpusGetRequest,OpusRequest,OpusSetRequest} from '../actions/opus';\n`
+        `import {OpusGetRequest,OpusRequest,OpusSetRequest} from '../actions/opus.js';\n`,
     );
-    cs.write(`import {Encoder} from 'opus-codec/opus';\n`);
+    cs.write(`import {Encoder} from '../opus/index.js';\n`);
     cs.write(
         `export function setToEncoder(encoder: Encoder, request: OpusSetRequest){\n`,
         () => {
@@ -474,18 +474,18 @@ async function generateWorkerActions() {
                         cs.indentBlock(() => {
                             cs.write(
                                 `result = encoder.${getOpusRequestName(
-                                    v[0]
-                                )}(request.value);\n`
+                                    v[0],
+                                )}(request.value);\n`,
                             );
                             cs.write('break;\n');
                         });
                     }
                 },
-                '}\n'
+                '}\n',
             );
             cs.write('return result;\n');
         },
-        '}\n'
+        '}\n',
     );
     cs.write(
         `export function getFromEncoder(encoder: Encoder, request: OpusGetRequest){\n`,
@@ -500,22 +500,22 @@ async function generateWorkerActions() {
                         cs.indentBlock(() => {
                             cs.write(
                                 `result = encoder.${getOpusRequestName(
-                                    v[0]
-                                )}();\n`
+                                    v[0],
+                                )}();\n`,
                             );
                             cs.write('break;\n');
                         });
                     }
                 },
-                '}\n'
+                '}\n',
             );
             cs.write('return result;\n');
         },
-        '}\n'
+        '}\n',
     );
     await fs.promises.writeFile(
         path.resolve(currentDir, '../worker/opus.ts'),
-        cs.value()
+        cs.value(),
     );
 }
 
@@ -529,11 +529,11 @@ function camelCase(value: string) {
     return value
         .replace(/([a-zA-Z]+)_([a-zA-Z]+)/g, (_, a: string, b: string) => {
             return `${lowerFirst(a.toLowerCase())}${upperFirst(
-                b.toLowerCase()
+                b.toLowerCase(),
             )}`;
         })
         .replace(/_([a-zA-Z]+)/g, (_, a: string) =>
-            upperFirst(a.toLowerCase())
+            upperFirst(a.toLowerCase()),
         );
 }
 
@@ -543,8 +543,8 @@ function getOpusRequestName(name: string) {
 
 async function generateOpusGettersAndSettersClass() {
     const cs = new CodeStream();
-    cs.write(`import { Runtime, Integer } from '../runtime';\n`);
-    cs.write(`import constants from './constants';\n`);
+    cs.write(`import { Runtime, Integer } from '../runtime/index.js';\n`);
+    cs.write(`import constants from './constants.js';\n`);
     cs.write(
         'export class OpusGettersAndSetters {\n',
         () => {
@@ -558,7 +558,7 @@ async function generateOpusGettersAndSettersClass() {
                     cs.write(`this.#value = new Integer(runtime);\n`);
                     cs.write(`this.#opusEncoderOffset = opusEncoderOffset;\n`);
                 },
-                '}\n'
+                '}\n',
             );
             for (const v of opusGettersAndSetters) {
                 const name = getOpusRequestName(v[0]);
@@ -578,28 +578,28 @@ async function generateOpusGettersAndSettersClass() {
                             varName = 'x';
                         }
                         cs.write(
-                            `const result = this.#runtime.originalRuntime().${v[0].toLowerCase()}(this.#opusEncoderOffset,${varName});\n`
+                            `const result = this.#runtime.originalRuntime().${v[0].toLowerCase()}(this.#opusEncoderOffset,${varName});\n`,
                         );
                         if (isGetter) {
                         }
                         if (isGetter) {
                             cs.write(
-                                `if(result != constants.OPUS_OK) throw new Error('Failed to set ${v[0]}');\n`
+                                `if(result != constants.OPUS_OK) throw new Error('Failed to set ${v[0]}');\n`,
                             );
                             cs.write('return this.#value.value();\n');
                         } else {
                             cs.write(`return result === constants.OPUS_OK;\n`);
                         }
                     },
-                    '}\n'
+                    '}\n',
                 );
             }
         },
-        '}\n'
+        '}\n',
     );
     await fs.promises.writeFile(
         path.resolve(currentDir, '../opus/OpusGettersAndSetters.ts'),
-        cs.value()
+        cs.value(),
     );
 }
 
@@ -607,7 +607,8 @@ import { getArgument } from 'cli-argument-helper';
 
 (async () => {
     const args = process.argv.slice(2);
-    const generate = getArgument(args, '-g') !== null;
+    const generate =
+        (getArgument(args, '-g') ?? getArgument(args, '--generate')) !== null;
     const runCompile = getArgument(args, '--compile') !== null;
     const publishPackage = getArgument(args, '--publish') !== null;
     if (generate) {
