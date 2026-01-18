@@ -25,6 +25,13 @@ async function createModule({ wasmFileHref } = {}) {
         wasi_snapshot_preview1
     };
 
+    let process =
+        'process' in globalThis
+            ? globalThis.process
+            : {
+                  env: {}
+              };
+
     let memory;
     const shouldImportMemory = process.env['WASI_IMPORT_MEMORY'];
 
