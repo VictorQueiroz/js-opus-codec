@@ -5,47 +5,9 @@ async function wasmNoop(returnValue) {
     };
 }
 
-async function createModule({ wasmFileHref } = {}) {
-    const wasi_snapshot_preview1 = {};
-    for (const funcName of [
-        'args_get',
-        'args_sizes_get',
-        'fd_close',
-        'fd_seek',
-        'fd_write',
-        'proc_exit'
-    ]) {
-        wasi_snapshot_preview1[funcName] = function (args) {
-            console.log('[%s] called with %o', funcName, args);
-            return 0; // Success
-        };
-    }
-
-    const importObject = {
-        wasi_snapshot_preview1
-    };
-
-    let process =
-        'process' in globalThis
-            ? globalThis.process
-            : {
-                  env: {}
-              };
-
-    let memory;
-    const shouldImportMemory = process.env['WASI_IMPORT_MEMORY'];
-
-    if (shouldImportMemory) {
-        memory = new WebAssembly.Memory({ initial: 256, maximum: 32768 });
-        importObject['env'] = {
-            memory
-        };
-    } else {
-        memory = null;
-    }
-
+async function getInstantiatedSource(importObject) {
     let pendingWebAssemblyInstantiateSource;
-    if (process.env['NODE_ENV'] !== 'production') {
+    if (process.env['RUNTIME'] === 'nodejs') {
         const fs = await import('fs');
         const path = await import('path');
         const wasmPath = path.resolve(import.meta.dirname, 'index.wasm');
@@ -69,12 +31,33 @@ async function createModule({ wasmFileHref } = {}) {
             await WebAssembly.instantiateStreaming(response, importObject);
     }
 
-    const webAssemblyInstantiatedSource =
-        await pendingWebAssemblyInstantiateSource;
+    return pendingWebAssemblyInstantiateSource;
+}
 
-    if (!shouldImportMemory) {
-        memory = webAssemblyInstantiatedSource.instance.exports.memory;
+async function createModule({ wasmFileHref } = {}) {
+    const wasi_snapshot_preview1 = {};
+    for (const funcName of [
+        'args_get',
+        'args_sizes_get',
+        'fd_close',
+        'fd_seek',
+        'fd_write',
+        'proc_exit'
+    ]) {
+        wasi_snapshot_preview1[funcName] = function (args) {
+            console.log('[%s] called with %o', funcName, args);
+            return 0; // Success
+        };
     }
+
+    const importObject = {
+        wasi_snapshot_preview1
+    };
+
+    const webAssemblyInstantiatedSource =
+        await getInstantiatedSource(importObject);
+    const memory =
+        webAssemblyInstantiatedSource.instance.exports.memory ?? null;
     if (memory === null) {
         throw new Error('Memory was expected to be imported but is null');
     }
