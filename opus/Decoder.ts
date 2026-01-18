@@ -35,6 +35,7 @@ export default class Decoder {
             runtime,
             this.#frameSize * channels * Float32Array.BYTES_PER_ELEMENT
         );
+        this.#holder.add(this.#pcm);
     }
     public decodeFloat(value: Uint8Array, decodeFec = 0) {
         let data = this.#data;

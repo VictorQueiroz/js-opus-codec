@@ -22,6 +22,9 @@ export default class Encoder extends OpusGettersAndSetters {
          */
         pcmBufferLength: number
     ) {
+        if (!outBufferLength) {
+            throw new Error('Output buffer length must be more than 0');
+        }
         const error = new Integer(runtime);
         const encoderId = runtime
             .originalRuntime()
@@ -33,6 +36,7 @@ export default class Encoder extends OpusGettersAndSetters {
             );
 
         super(runtime, encoderId);
+
         this.#holder = new ResourcesHolder();
         this.#error = error;
         this.#runtime = runtime;
@@ -55,10 +59,8 @@ export default class Encoder extends OpusGettersAndSetters {
          */
         this.#encoder = encoderId;
         if (error.value() < 0) {
+            this.destroy();
             throw new Error('Failed to create encoder');
-        }
-        if (!outBufferLength) {
-            throw new Error('outBufferLength must be more than 0');
         }
     }
     public encoded() {
@@ -103,11 +105,12 @@ export default class Encoder extends OpusGettersAndSetters {
 
         return result;
     }
-    public destroy() {
+    public override destroy() {
+        super.destroy();
         this.#holder.destroy();
         this.#runtime.originalRuntime().opus_encoder_destroy(this.#encoder);
     }
-    [Symbol.dispose]() {
+    public override [Symbol.dispose]() {
         this.destroy();
     }
 }

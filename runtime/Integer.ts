@@ -25,6 +25,9 @@ export default class Integer implements IResource {
     }
 
     public offset() {
+        if (this.#offset === 0) {
+            throw new Error('Integer has been destroyed');
+        }
         return this.#offset;
     }
 

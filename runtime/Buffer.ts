@@ -23,4 +23,7 @@ export default class Buffer implements IResource {
         this.#runtime.free(this.#offset);
         this.#offset = 0;
     }
+    [Symbol.dispose]() {
+        this.destroy();
+    }
 }

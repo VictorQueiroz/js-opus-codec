@@ -1,5 +1,8 @@
 {
     "include": [],
+    "ts-node": {
+        "preferTsExts": true
+    },
     "compilerOptions": {
         "composite": true,
         "incremental": true,

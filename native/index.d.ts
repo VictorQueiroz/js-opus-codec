@@ -2,7 +2,10 @@ type GeneratedOpusGettersAndSetters =
     import('./opus-ts-getters-and-setters.d.ts').GeneratedOpusGettersAndSetters;
 
 export interface EmscriptenRuntime extends GeneratedOpusGettersAndSetters {
-    memory: { buffer: ArrayBuffer };
+    memory: { buffer: ArrayBuffer; grow(delta: number): number };
+    __data_end: { value: number };
+    __heap_end: { value: number };
+    __heap_base: { value: number };
     malloc(n: number): number;
     size_of_int(): number;
     size_of_void_ptr(): number;

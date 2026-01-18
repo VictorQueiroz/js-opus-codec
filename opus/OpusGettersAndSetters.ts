@@ -1,6 +1,6 @@
-import { Runtime, Integer } from '../runtime/index.js';
+import { Runtime, Integer, type IResource } from '../runtime/index.js';
 import constants from './constants.js';
-export class OpusGettersAndSetters {
+export class OpusGettersAndSetters implements IResource {
     readonly #opusEncoderOffset;
     readonly #runtime;
     readonly #value;
@@ -186,5 +186,11 @@ export class OpusGettersAndSetters {
         const result = this.#runtime.originalRuntime().opus_get_pitch(this.#opusEncoderOffset,this.#value.offset());
         if(result != constants.OPUS_OK) throw new Error('Failed to set OPUS_GET_PITCH');
         return this.#value.value();
+    }
+    public destroy() {
+        this.#value.destroy();
+    }
+    [Symbol.dispose]() {
+        this.destroy();
     }
 }

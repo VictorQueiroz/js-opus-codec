@@ -9,10 +9,11 @@ export default class ResourcesHolder {
         if (this.#destroyed) {
             throw new Error('ResourcesHolder already destroyed');
         }
-        this.#destroyed = true;
         for (const r of this.#resources) {
             r.destroy();
         }
+        this.#resources.clear();
+        this.#destroyed = true;
     }
     [Symbol.dispose]() {
         this.destroy();
@@ -21,4 +22,5 @@ export default class ResourcesHolder {
 
 export interface IResource {
     destroy(): void;
+    [Symbol.dispose](): void;
 }

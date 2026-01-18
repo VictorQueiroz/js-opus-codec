@@ -1,7 +1,8 @@
 {
-    "extends":"../tsconfig.base.json",
-    "references": [
-        {"path":"../runtime"},
-        {"path":"../opus"}
-    ]
+    "extends": "../tsconfig.base.json",
+    "compilerOptions": {
+        "types": ["node"]
+    },
+    "include": ["index.ts"],
+    "references": [{ "path": "../runtime" }, { "path": "../opus" }]
 }

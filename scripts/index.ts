@@ -89,13 +89,13 @@ const otherOpusConstants = new Map<string, number>([
     ['OPUS_BANDWIDTH_WIDEBAND', 1103] /**< 8 kHz bandpass @hideinitializer*/,
     [
         'OPUS_BANDWIDTH_SUPERWIDEBAND',
-        1104,
+        1104
     ] /**<12 kHz bandpass @hideinitializer*/,
     ['OPUS_BANDWIDTH_FULLBAND', 1105] /**<20 kHz bandpass @hideinitializer*/,
 
     [
         'OPUS_FRAMESIZE_ARG',
-        5000,
+        5000
     ] /**< Select frame size from the argument (default) */,
     ['OPUS_FRAMESIZE_2_5_MS', 5001] /**< Use 2.5 ms frames */,
     ['OPUS_FRAMESIZE_5_MS', 5002] /**< Use 5 ms frames */,
@@ -105,50 +105,7 @@ const otherOpusConstants = new Map<string, number>([
     ['OPUS_FRAMESIZE_60_MS', 5006] /**< Use 60 ms frames */,
     ['OPUS_FRAMESIZE_80_MS', 5007] /**< Use 80 ms frames */,
     ['OPUS_FRAMESIZE_100_MS', 5008] /**< Use 100 ms frames */,
-    ['OPUS_FRAMESIZE_120_MS', 5009] /**< Use 120 ms frames */,
-]);
-
-const opusGettersAndSetters = new Map([
-    ['OPUS_SET_COMPLEXITY', { arguments: ['x'] }],
-    ['OPUS_GET_COMPLEXITY', { arguments: ['x'] }],
-    ['OPUS_SET_BITRATE', { arguments: ['x'] }],
-    ['OPUS_GET_BITRATE', { arguments: ['x'] }],
-    ['OPUS_SET_VBR', { arguments: ['x'] }],
-    ['OPUS_GET_VBR', { arguments: ['x'] }],
-    ['OPUS_SET_VBR_CONSTRAINT', { arguments: ['x'] }],
-    ['OPUS_GET_VBR_CONSTRAINT', { arguments: ['x'] }],
-    ['OPUS_SET_FORCE_CHANNELS', { arguments: ['x'] }],
-    ['OPUS_GET_FORCE_CHANNELS', { arguments: ['x'] }],
-    ['OPUS_SET_MAX_BANDWIDTH', { arguments: ['x'] }],
-    ['OPUS_GET_MAX_BANDWIDTH', { arguments: ['x'] }],
-    ['OPUS_SET_BANDWIDTH', { arguments: ['x'] }],
-    ['OPUS_SET_SIGNAL', { arguments: ['x'] }],
-    ['OPUS_GET_SIGNAL', { arguments: ['x'] }],
-    ['OPUS_SET_APPLICATION', { arguments: ['x'] }],
-    ['OPUS_GET_APPLICATION', { arguments: ['x'] }],
-    ['OPUS_GET_LOOKAHEAD', { arguments: ['x'] }],
-    ['OPUS_SET_INBAND_FEC', { arguments: ['x'] }],
-    ['OPUS_GET_INBAND_FEC', { arguments: ['x'] }],
-    ['OPUS_SET_PACKET_LOSS_PERC', { arguments: ['x'] }],
-    ['OPUS_GET_PACKET_LOSS_PERC', { arguments: ['x'] }],
-    ['OPUS_SET_DTX', { arguments: ['x'] }],
-    ['OPUS_GET_DTX', { arguments: ['x'] }],
-    ['OPUS_SET_LSB_DEPTH', { arguments: ['x'] }],
-    ['OPUS_GET_LSB_DEPTH', { arguments: ['x'] }],
-    ['OPUS_SET_EXPERT_FRAME_DURATION', { arguments: ['x'] }],
-    ['OPUS_GET_EXPERT_FRAME_DURATION', { arguments: ['x'] }],
-    ['OPUS_SET_PREDICTION_DISABLED', { arguments: ['x'] }],
-    ['OPUS_GET_PREDICTION_DISABLED', { arguments: ['x'] }],
-    // ['OPUS_RESET_STATE', { arguments: ['x'] }],
-    ['OPUS_GET_BANDWIDTH', { arguments: ['x'] }],
-    ['OPUS_GET_SAMPLE_RATE', { arguments: ['x'] }],
-    ['OPUS_SET_PHASE_INVERSION_DISABLED', { arguments: ['x'] }],
-    ['OPUS_GET_PHASE_INVERSION_DISABLED', { arguments: ['x'] }],
-    ['OPUS_GET_IN_DTX', { arguments: ['x'] }],
-    ['OPUS_SET_GAIN', { arguments: ['x'] }],
-    ['OPUS_GET_GAIN', { arguments: ['x'] }],
-    ['OPUS_GET_LAST_PACKET_DURATION', { arguments: ['x'] }],
-    ['OPUS_GET_PITCH', { arguments: ['x'] }],
+    ['OPUS_FRAMESIZE_120_MS', 5009] /**< Use 120 ms frames */
 ]);
 
 async function generateOpusGettersAndSetters() {
@@ -173,16 +130,16 @@ async function generateOpusGettersAndSetters() {
             () => {
                 cs.write(
                     `return opus_encoder_ctl(enc,${c[0]}(${c[1].arguments.join(
-                        ', ',
-                    )}));\n`,
+                        ', '
+                    )}));\n`
                 );
             },
-            '}\n',
+            '}\n'
         );
     }
     await fs.promises.writeFile(
         path.resolve(currentDir, '../native/opus_js_getters_and_setters.c'),
-        cs.value(),
+        cs.value()
     );
 }
 
@@ -195,12 +152,12 @@ async function generateOpusConstantsTsFile() {
                 cs.write(`'${c[0]}': ${c[1]},\n`);
             }
         },
-        '};\n',
+        '};\n'
     );
     cs.write('export default constants;\n');
     await fs.promises.writeFile(
         path.resolve(currentDir, '../opus/constants.ts'),
-        cs.value(),
+        cs.value()
     );
 }
 
@@ -215,18 +172,29 @@ async function compile() {
             '-B',
             buildFolder,
             '-DOPUS_STACK_PROTECTOR=0',
+            '-DOPUS_DISABLE_INTRINSICS=0',
+            '-DOPUS_FIXED_POINT=0',
+            '-DOPUS_HARDENING=1',
+            '-DOPUS_FUZZING=0',
+            '-DOPUS_CHECK_ASM=1',
+            '-DOPUS_INSTALL_PKG_CONFIG_MODULE=0',
+            '-DOPUS_INSTALL_CMAKE_CONFIG_MODULE=0',
             '-DOPUS_BUILD_SHARED_LIBRARY=0',
             '-DOPUS_BUILD_TESTING=0',
+            '-DOPUS_ENABLE_FLOAT_API=1',
+            '-DOPUS_ASSERTIONS=0',
+            '-DOPUS_FORTIFY_SOURCE=1',
+            '-DOPUS_BUILD_PROGRAMS=0',
             '-DCMAKE_BUILD_TYPE=Release',
             '--toolchain',
-            path.resolve(wasiSdkPath, 'share', 'cmake', 'wasi-sdk.cmake'),
+            path.resolve(wasiSdkPath, 'share', 'cmake', 'wasi-sdk.cmake')
         ],
         {
-            cwd: path.resolve(currentDir, '../native'),
-        },
+            cwd: path.resolve(currentDir, '../native')
+        }
     );
     await runCommand('make', [], {
-        cwd: buildFolder,
+        cwd: buildFolder
     });
     const cs = new CodeStream();
     cs.write(
@@ -234,19 +202,22 @@ async function compile() {
         () => {
             for (const getterAndSetter of opusGettersAndSetters) {
                 cs.write(
-                    `${getterAndSetter[0].toLowerCase()}(enc: number,value: number): number;\n`,
+                    `${getterAndSetter[0].toLowerCase()}(enc: number,value: number): number;\n`
                 );
             }
         },
-        '};\n',
+        '};\n'
     );
     await fs.promises.writeFile(
         path.resolve(currentDir, '../native/opus-ts-getters-and-setters.d.ts'),
-        cs.value(),
+        cs.value()
     );
     const exportFunctions = [
         'size_of_int',
         'size_of_void_ptr',
+        '__heap_base',
+        '__heap_end',
+        '__data_end',
         'malloc',
         'free',
         'opus_decoder_create',
@@ -257,20 +228,24 @@ async function compile() {
         'opus_encoder_ctl',
         'opus_encode_float',
         ...Array.from(opusGettersAndSetters.keys()).map(
-            (f) => `${f.toLowerCase()}`,
-        ),
+            (f) => `${f.toLowerCase()}`
+        )
     ];
     const clang = path.resolve(wasiSdkPath, 'bin/clang');
     await runCommand(clang, [
-        '--target=wasm32-wasi',
         '-v',
-        ...exportFunctions.map((f) => ['-Wl', `--export=${f}`].join(',')),
+        '--target=wasm32-wasi',
         '-o',
         path.resolve(currentDir, '../native/index.wasm'),
-        '-Wl,--import-memory',
+        '-O0',
+        ...exportFunctions.map((f) => ['-Wl', `--export=${f}`].join(',')),
+        // '-Wl,--no-entry',
+        // '-Wl,--export-all',
+        // '-Wl,--strip-all',
+        // '-Wl,--import-memory',
+        '-g3',
         path.resolve(buildFolder, 'opus/libopus.a'),
-        path.resolve(buildFolder, 'libRecTimeWebWorker.a'),
-        '-O3',
+        path.resolve(buildFolder, 'libRecTimeWebWorker.a')
     ]);
     await runCommand('npx', [
         'tsc',
@@ -279,20 +254,20 @@ async function compile() {
         path.resolve(currentDir, '../worklet'),
         path.resolve(currentDir, '../webpack'),
         path.resolve(currentDir, '../actions'),
-        '--force',
+        '--force'
     ]);
     await runCommand('npx', [
         'webpack',
         '--config',
         path.resolve(currentDir, '../webpack/webpack.config.js'),
-        '--stats-error-details',
+        '--stats-error-details'
     ]);
     await runCommand('npx', [
         'tsc',
         '--project',
         path.resolve(currentDir, '../actions'),
         '--outDir',
-        outFolder,
+        outFolder
     ]);
     await fs.promises.writeFile(
         path.resolve(outFolder, 'package.json'),
@@ -301,309 +276,21 @@ async function compile() {
                 name: 'opus-codec-worker',
                 license: 'MIT',
                 version: (await import('../package.json')).default.version,
-                files: ['**/*.{js,d.ts,map}'],
+                files: ['**/*.{js,d.ts,map}']
             },
             null,
-            4,
-        ),
-    );
-}
-
-const opusGettersAndSettersArgumentTypes = new Map<
-    string,
-    {
-        arguments: {
-            name: string;
-            type: 'int' | 'int_ptr';
-        }[];
-    }
->([
-    ['OPUS_SET_COMPLEXITY', { arguments: [{ name: 'x', type: 'int' }] }],
-    ['OPUS_GET_COMPLEXITY', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-    ['OPUS_SET_BITRATE', { arguments: [{ name: 'x', type: 'int' }] }],
-    ['OPUS_GET_BITRATE', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-    ['OPUS_SET_VBR', { arguments: [{ name: 'x', type: 'int' }] }],
-    ['OPUS_GET_VBR', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-    ['OPUS_SET_VBR_CONSTRAINT', { arguments: [{ name: 'x', type: 'int' }] }],
-    [
-        'OPUS_GET_VBR_CONSTRAINT',
-        { arguments: [{ name: 'x', type: 'int_ptr' }] },
-    ],
-    ['OPUS_SET_FORCE_CHANNELS', { arguments: [{ name: 'x', type: 'int' }] }],
-    [
-        'OPUS_GET_FORCE_CHANNELS',
-        { arguments: [{ name: 'x', type: 'int_ptr' }] },
-    ],
-    ['OPUS_SET_MAX_BANDWIDTH', { arguments: [{ name: 'x', type: 'int' }] }],
-    ['OPUS_GET_MAX_BANDWIDTH', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-    ['OPUS_SET_BANDWIDTH', { arguments: [{ name: 'x', type: 'int' }] }],
-    ['OPUS_SET_SIGNAL', { arguments: [{ name: 'x', type: 'int' }] }],
-    ['OPUS_GET_SIGNAL', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-    ['OPUS_SET_APPLICATION', { arguments: [{ name: 'x', type: 'int' }] }],
-    ['OPUS_GET_APPLICATION', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-    ['OPUS_GET_LOOKAHEAD', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-    ['OPUS_SET_INBAND_FEC', { arguments: [{ name: 'x', type: 'int' }] }],
-    ['OPUS_GET_INBAND_FEC', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-    ['OPUS_SET_PACKET_LOSS_PERC', { arguments: [{ name: 'x', type: 'int' }] }],
-    [
-        'OPUS_GET_PACKET_LOSS_PERC',
-        { arguments: [{ name: 'x', type: 'int_ptr' }] },
-    ],
-    ['OPUS_SET_DTX', { arguments: [{ name: 'x', type: 'int' }] }],
-    ['OPUS_GET_DTX', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-    ['OPUS_SET_LSB_DEPTH', { arguments: [{ name: 'x', type: 'int' }] }],
-    ['OPUS_GET_LSB_DEPTH', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-    [
-        'OPUS_SET_EXPERT_FRAME_DURATION',
-        { arguments: [{ name: 'x', type: 'int' }] },
-    ],
-    [
-        'OPUS_GET_EXPERT_FRAME_DURATION',
-        { arguments: [{ name: 'x', type: 'int_ptr' }] },
-    ],
-    [
-        'OPUS_SET_PREDICTION_DISABLED',
-        { arguments: [{ name: 'x', type: 'int' }] },
-    ],
-    [
-        'OPUS_GET_PREDICTION_DISABLED',
-        { arguments: [{ name: 'x', type: 'int_ptr' }] },
-    ],
-    ['OPUS_GET_BANDWIDTH', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-    ['OPUS_GET_SAMPLE_RATE', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-    [
-        'OPUS_SET_PHASE_INVERSION_DISABLED',
-        { arguments: [{ name: 'x', type: 'int' }] },
-    ],
-    [
-        'OPUS_GET_PHASE_INVERSION_DISABLED',
-        { arguments: [{ name: 'x', type: 'int_ptr' }] },
-    ],
-    ['OPUS_GET_IN_DTX', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-    ['OPUS_SET_GAIN', { arguments: [{ name: 'x', type: 'int' }] }],
-    ['OPUS_GET_GAIN', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-    [
-        'OPUS_GET_LAST_PACKET_DURATION',
-        { arguments: [{ name: 'x', type: 'int_ptr' }] },
-    ],
-    ['OPUS_GET_PITCH', { arguments: [{ name: 'x', type: 'int_ptr' }] }],
-]);
-
-async function generateWorkerActions() {
-    const cs = new CodeStream();
-    const getEnumName = (value: string) =>
-        upperFirst(camelCase(value.replace(/^OPUS_/, '')));
-    cs.write(
-        `export enum OpusRequest {\n`,
-        () => {
-            for (const v of opusGettersAndSetters) {
-                cs.write(`${getEnumName(v[0])} = '${v[0]}',\n`);
-            }
-        },
-        '}\n',
-    );
-    const getInterfaceNames = new Set<string>();
-    const setInterfaceNames = new Set<string>();
-    for (const v of opusGettersAndSetters) {
-        // cs.write(`export interface `)
-        const interfaceName = `I${upperFirst(camelCase(v[0]))}`;
-        const isGetter = v[0].startsWith('OPUS_GET_');
-        if (isGetter) {
-            getInterfaceNames.add(interfaceName);
-        } else {
-            setInterfaceNames.add(interfaceName);
-        }
-        cs.write(
-            `export interface ${interfaceName} {\n`,
-            () => {
-                cs.write(`type: OpusRequest.${getEnumName(v[0])};\n`);
-                cs.write('encoderId: string;\n');
-                if (!isGetter) {
-                    cs.write(`value: number;\n`);
-                }
-            },
-            '}\n',
-        );
-        cs.write(
-            `export function ${v[0]}(encoderId: string,${
-                isGetter
-                    ? ''
-                    : v[1].arguments.map((a) => `${a}: number`).join(', ')
-            }): ${interfaceName} {\n`,
-            () => {
-                cs.write(
-                    `return {\n`,
-                    () => {
-                        cs.write('encoderId,\n');
-                        cs.write(`type: OpusRequest.${getEnumName(v[0])},\n`);
-                        if (!isGetter) {
-                            cs.write(`value: x\n`);
-                        }
-                    },
-                    '};\n',
-                );
-            },
-            '}\n',
-        );
-    }
-    cs.write(
-        `export type OpusGetRequest = ${[...getInterfaceNames].join(' | ')};\n`,
-    );
-    cs.write(
-        `export type OpusSetRequest = ${[...setInterfaceNames].join(' | ')};\n`,
-    );
-    await fs.promises.writeFile(
-        path.resolve(currentDir, '../actions/opus.ts'),
-        cs.value(),
-    );
-
-    cs.write(
-        `import {OpusGetRequest,OpusRequest,OpusSetRequest} from '../actions/opus.js';\n`,
-    );
-    cs.write(`import {Encoder} from '../opus/index.js';\n`);
-    cs.write(
-        `export function setToEncoder(encoder: Encoder, request: OpusSetRequest){\n`,
-        () => {
-            cs.write('let result: boolean;\n');
-            cs.write(
-                `switch(request.type) {\n`,
-                () => {
-                    for (const v of opusGettersAndSetters) {
-                        if (!v[0].startsWith('OPUS_SET_')) continue;
-                        cs.write(`case OpusRequest.${getEnumName(v[0])}:\n`);
-                        cs.indentBlock(() => {
-                            cs.write(
-                                `result = encoder.${getOpusRequestName(
-                                    v[0],
-                                )}(request.value);\n`,
-                            );
-                            cs.write('break;\n');
-                        });
-                    }
-                },
-                '}\n',
-            );
-            cs.write('return result;\n');
-        },
-        '}\n',
-    );
-    cs.write(
-        `export function getFromEncoder(encoder: Encoder, request: OpusGetRequest){\n`,
-        () => {
-            cs.write('let result: number;\n');
-            cs.write(
-                `switch(request.type) {\n`,
-                () => {
-                    for (const v of opusGettersAndSetters) {
-                        if (!v[0].startsWith('OPUS_GET_')) continue;
-                        cs.write(`case OpusRequest.${getEnumName(v[0])}:\n`);
-                        cs.indentBlock(() => {
-                            cs.write(
-                                `result = encoder.${getOpusRequestName(
-                                    v[0],
-                                )}();\n`,
-                            );
-                            cs.write('break;\n');
-                        });
-                    }
-                },
-                '}\n',
-            );
-            cs.write('return result;\n');
-        },
-        '}\n',
-    );
-    await fs.promises.writeFile(
-        path.resolve(currentDir, '../worker/opus.ts'),
-        cs.value(),
-    );
-}
-
-function lowerFirst(v: string) {
-    return `${v[0]?.toLowerCase()}${v.substring(1)}`;
-}
-function upperFirst(v: string) {
-    return `${v[0]?.toUpperCase()}${v.substring(1)}`;
-}
-function camelCase(value: string) {
-    return value
-        .replace(/([a-zA-Z]+)_([a-zA-Z]+)/g, (_, a: string, b: string) => {
-            return `${lowerFirst(a.toLowerCase())}${upperFirst(
-                b.toLowerCase(),
-            )}`;
-        })
-        .replace(/_([a-zA-Z]+)/g, (_, a: string) =>
-            upperFirst(a.toLowerCase()),
-        );
-}
-
-function getOpusRequestName(name: string) {
-    return camelCase(name.replace(/^OPUS_/, ''));
-}
-
-async function generateOpusGettersAndSettersClass() {
-    const cs = new CodeStream();
-    cs.write(`import { Runtime, Integer } from '../runtime/index.js';\n`);
-    cs.write(`import constants from './constants.js';\n`);
-    cs.write(
-        'export class OpusGettersAndSetters {\n',
-        () => {
-            cs.write(`readonly #opusEncoderOffset;\n`);
-            cs.write(`readonly #runtime;\n`);
-            cs.write(`readonly #value;\n`);
-            cs.write(
-                'public constructor(runtime: Runtime, opusEncoderOffset: number) {\n',
-                () => {
-                    cs.write(`this.#runtime = runtime;\n`);
-                    cs.write(`this.#value = new Integer(runtime);\n`);
-                    cs.write(`this.#opusEncoderOffset = opusEncoderOffset;\n`);
-                },
-                '}\n',
-            );
-            for (const v of opusGettersAndSetters) {
-                const name = getOpusRequestName(v[0]);
-                const args = `${v[1].arguments
-                    .map((c) => `${c}: number`)
-                    .join(', ')}`;
-                const isGetter = v[0].startsWith('OPUS_GET_');
-                cs.write(
-                    `public ${name}(${isGetter ? '' : args}): ${
-                        isGetter ? 'number' : 'boolean'
-                    } {\n`,
-                    () => {
-                        let varName: string;
-                        if (isGetter) {
-                            varName = `this.#value.offset()`;
-                        } else {
-                            varName = 'x';
-                        }
-                        cs.write(
-                            `const result = this.#runtime.originalRuntime().${v[0].toLowerCase()}(this.#opusEncoderOffset,${varName});\n`,
-                        );
-                        if (isGetter) {
-                        }
-                        if (isGetter) {
-                            cs.write(
-                                `if(result != constants.OPUS_OK) throw new Error('Failed to set ${v[0]}');\n`,
-                            );
-                            cs.write('return this.#value.value();\n');
-                        } else {
-                            cs.write(`return result === constants.OPUS_OK;\n`);
-                        }
-                    },
-                    '}\n',
-                );
-            }
-        },
-        '}\n',
-    );
-    await fs.promises.writeFile(
-        path.resolve(currentDir, '../opus/OpusGettersAndSetters.ts'),
-        cs.value(),
+            4
+        )
     );
 }
 
 import { getArgument } from 'cli-argument-helper';
+import { getString } from 'cli-argument-helper/string/index.js';
+import getArgumentAssignment from 'cli-argument-helper/getArgumentAssignment.js';
+import { generateWorkerActions } from './generateWorkerActions.js';
+import { opusGettersAndSetters } from './opusGettersAndSetters.js';
+import { opusGettersAndSettersArgumentTypes } from './opusGettersAndSettersArgumentTypes.js';
+import { generateOpusGettersAndSettersClass } from './generateOpusGettersAndSettersClass.js';
 
 (async () => {
     const args = process.argv.slice(2);
@@ -611,6 +298,11 @@ import { getArgument } from 'cli-argument-helper';
         (getArgument(args, '-g') ?? getArgument(args, '--generate')) !== null;
     const runCompile = getArgument(args, '--compile') !== null;
     const publishPackage = getArgument(args, '--publish') !== null;
+    const oneTimePassword = getArgumentAssignment.default(
+        args,
+        '--otp',
+        getString
+    );
     if (generate) {
         await generateWorkerActions();
         await generateOpusGettersAndSettersClass();
@@ -621,8 +313,12 @@ import { getArgument } from 'cli-argument-helper';
         await compile();
     }
     if (publishPackage) {
-        await runCommand('npm', ['publish'], {
-            cwd: outFolder,
+        const publishArgs = ['publish'];
+        if (oneTimePassword !== null) {
+            publishArgs.push('--otp', oneTimePassword);
+        }
+        await runCommand('npm', publishArgs, {
+            cwd: outFolder
         });
     }
 })().catch((reason) => {
