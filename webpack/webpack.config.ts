@@ -5,45 +5,47 @@ const configuration: Configuration[] = [
     {
         target: 'webworker',
         entry: {
-            worker: path.resolve(import.meta.dirname, '../worker'),
+            worker: path.resolve(import.meta.dirname, '../worker')
         },
         output: {
-            path: path.resolve(import.meta.dirname, '../out'),
+            chunkFormat: false,
+            path: path.resolve(import.meta.dirname, '../out')
         },
         resolve: {
             fallback: {
                 path: false,
-                fs: false,
-            },
+                fs: false
+            }
         },
         module: {
             rules: [
                 {
                     test: /\.wasm$/,
-                    type: 'asset/inline',
-                },
-            ],
+                    type: 'asset/inline'
+                }
+            ]
         },
-        mode: 'production',
+        mode: 'production'
     },
     {
         mode: 'production',
         target: 'webworker',
         entry: {
-            worklet: path.resolve(import.meta.dirname, '../worklet'),
+            worklet: path.resolve(import.meta.dirname, '../worklet')
         },
         module: {
             rules: [
                 {
                     test: /\.wasm$/,
-                    type: 'asset/inline',
-                },
-            ],
+                    type: 'asset/inline'
+                }
+            ]
         },
         output: {
-            path: path.resolve(import.meta.dirname, '../out/worklet'),
-        },
-    },
+            chunkFormat: false,
+            path: path.resolve(import.meta.dirname, '../out/worklet')
+        }
+    }
 ];
 
 export default configuration;
