@@ -17,7 +17,7 @@
   },
   "type": "module",
   "name": "opus-codec",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "license": "MIT",
   "files": [
     "{native,runtime,opus,es}/**/*.{d.ts,js,map,wasm}"
