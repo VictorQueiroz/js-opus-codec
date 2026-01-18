@@ -5,9 +5,9 @@ async function wasmNoop(returnValue) {
     };
 }
 
-async function getInstantiatedSource(importObject) {
+async function getInstantiatedSource({ wasmFileHref, importObject }) {
     let pendingWebAssemblyInstantiateSource;
-    if (process.env['RUNTIME'] === 'nodejs') {
+    if ('process' in globalThis && process.env['RUNTIME'] === 'nodejs') {
         const fs = await import('fs');
         const path = await import('path');
         const wasmPath = path.resolve(import.meta.dirname, 'index.wasm');
@@ -17,11 +17,6 @@ async function getInstantiatedSource(importObject) {
             importObject
         );
     } else {
-        if (typeof wasmFileHref !== 'string') {
-            const wasmBinaryUrl = await import('./index.wasm');
-            wasmFileHref = wasmBinaryUrl.default;
-        }
-
         if (typeof wasmFileHref !== 'string') {
             throw new Error('Invalid wasmFileHref');
         }
@@ -54,8 +49,10 @@ async function createModule({ wasmFileHref } = {}) {
         wasi_snapshot_preview1
     };
 
-    const webAssemblyInstantiatedSource =
-        await getInstantiatedSource(importObject);
+    const webAssemblyInstantiatedSource = await getInstantiatedSource({
+        wasmFileHref,
+        importObject
+    });
     const memory =
         webAssemblyInstantiatedSource.instance.exports.memory ?? null;
     if (memory === null) {

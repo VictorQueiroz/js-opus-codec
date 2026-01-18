@@ -1,5 +1,8 @@
 import path from 'node:path';
 import { type Configuration } from 'webpack';
+import webpack from 'webpack';
+
+const plugins = [new webpack.DefinePlugin({})];
 
 const configuration: Configuration[] = [
     {
@@ -11,6 +14,7 @@ const configuration: Configuration[] = [
             chunkFormat: false,
             path: path.resolve(import.meta.dirname, '../out')
         },
+        plugins,
         resolve: {
             fallback: {
                 path: false,
@@ -41,6 +45,7 @@ const configuration: Configuration[] = [
                 }
             ]
         },
+        plugins,
         output: {
             chunkFormat: false,
             path: path.resolve(import.meta.dirname, '../out/worklet')
