@@ -232,17 +232,19 @@ async function compile() {
         )
     ];
     const clang = path.resolve(wasiSdkPath, 'bin/clang');
+    const initialMemory = 32 * 1024 * 1024; // 32MB
+    const stackSize = 2 * 1024 * 1024; // 2MB
     await runCommand(clang, [
         '-v',
         '--target=wasm32-wasi',
         '-o',
         path.resolve(currentDir, '../native/index.wasm'),
-        '-O0',
+        '-O3',
         ...exportFunctions.map((f) => ['-Wl', `--export=${f}`].join(',')),
-        // '-Wl,--no-entry',
-        // '-Wl,--export-all',
-        // '-Wl,--strip-all',
-        // '-Wl,--import-memory',
+        '-Wl,--strip-all',
+        `-Wl,--initial-memory=${initialMemory}`, // 16MB initial memory
+        '-Wl,--max-memory=2147483648', // 2GB max memory
+        `-Wl,-z,stack-size=${stackSize}`, // 1MB stack size
         '-g3',
         path.resolve(buildFolder, 'opus/libopus.a'),
         path.resolve(buildFolder, 'libRecTimeWebWorker.a')

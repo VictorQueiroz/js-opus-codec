@@ -29,7 +29,7 @@ async function createModule({ wasmFileHref } = {}) {
     const shouldImportMemory = process.env['WASI_IMPORT_MEMORY'];
 
     if (shouldImportMemory) {
-        memory = new WebAssembly.Memory({ initial: 3 });
+        memory = new WebAssembly.Memory({ initial: 256, maximum: 32768 });
         importObject['env'] = {
             memory
         };
@@ -71,10 +71,6 @@ async function createModule({ wasmFileHref } = {}) {
     if (memory === null) {
         throw new Error('Memory was expected to be imported but is null');
     }
-
-    console.log(
-        Object.keys(webAssemblyInstantiatedSource.instance.exports).join(', ')
-    );
 
     return {
         ...webAssemblyInstantiatedSource.instance.exports,
