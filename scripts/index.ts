@@ -178,13 +178,15 @@ async function compile() {
         '--outDir',
         outFolder
     ]);
+    const { version, repository } = (await import('../package.json')).default;
     await fs.promises.writeFile(
         path.resolve(outFolder, 'package.json'),
         JSON.stringify(
             {
                 name: 'opus-codec-worker',
                 license: 'MIT',
-                version: (await import('../package.json')).default.version,
+                version,
+                repository,
                 files: ['**/*.{js,d.ts,map}']
             },
             null,

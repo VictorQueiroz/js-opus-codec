@@ -33,6 +33,10 @@
         "test": "npx tsx --test test",
         "test:coverage": "npx c8 --reporter=text --reporter=html npm run test"
     },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/VictorQueiroz/js-opus-codec"
+    },
     "browser": {
         "./actions/opus.js": "./es/actions/opus.js",
         "./actions/index.js": "./es/actions/index.js",
