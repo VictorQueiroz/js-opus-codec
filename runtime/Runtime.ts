@@ -19,36 +19,11 @@ export default class Runtime {
     public view() {
         return new DataView(this.#runtime.memory.buffer);
     }
-    #growHeap(len: number) {
-        const mem = this.#runtime.memory;
-
-        const heapEnd = this.#runtime.__heap_end.value;
-
-        const SLACK = 64 * 1024;
-        const currentPages = mem.buffer.byteLength / SLACK;
-
-        // console.log({
-        //     heapEnd,
-        //     dataEnd: this.#runtime.__data_end.value,
-        //     heapBase: this.#runtime.__heap_base.value,
-        //     memoryByteLength: mem.buffer.byteLength,
-        //     currentPages,
-        //     len,
-        //     SLACK
-        // });
-    }
     public malloc(len: number) {
-        this.#growHeap(len);
         const offset = this.#runtime.malloc(len);
-        this.#growHeap(len);
         if (!offset) {
             throw new Error(`Failed to allocate ${len} bytes`);
         }
-        (globalThis as any).console.log(
-            'allocated %d bytes at %d',
-            len,
-            offset
-        );
         const stack = new Error().stack ?? null;
         this.#allocations.set(offset, stack);
         return offset;
