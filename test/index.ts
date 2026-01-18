@@ -1,63 +1,12 @@
 import native from '../native/index.js';
 import Runtime from '../runtime/Runtime.js';
 import assert from 'node:assert';
-import child_process from 'node:child_process';
 import stream from 'node:stream';
 import * as opus from '../opus/index.js';
 import { test } from 'node:test';
+import { alsaPlay, alsaRecord } from './alsa-tools.js';
 
 const RingBufferF32 = (await import('ringbud')).RingBufferF32;
-
-function aplay({
-    sampleRate,
-    channels
-}: {
-    sampleRate: number;
-    channels: number;
-}) {
-    return child_process.spawn(
-        'aplay',
-        [
-            '-f',
-            'FLOAT_LE',
-            '-r',
-            sampleRate.toString(),
-            '-c',
-            channels.toString(),
-            '-i'
-        ],
-        {
-            stdio: ['pipe', 'inherit', 'inherit']
-        }
-    );
-}
-
-function arecord({
-    sampleRate,
-    channels,
-    duration,
-    bufferSize
-}: {
-    sampleRate: number;
-    channels: number;
-    duration: number;
-    bufferSize: number;
-}) {
-    return child_process.spawn(
-        'arecord',
-        [
-            '-r',
-            sampleRate.toString(),
-            '-f',
-            'FLOAT_LE',
-            `-c`,
-            channels.toString(),
-            `--duration=${duration}`,
-            `--buffer-size=${bufferSize}`
-        ],
-        { stdio: ['ignore', 'pipe', 'inherit'] }
-    );
-}
 
 async function createRuntime() {
     return new Runtime(await native());
@@ -83,7 +32,7 @@ test('encoder WebAssembly memory grow', async (t) => {
         frameSizeInSamples,
         outBufferLength
     );
-    console.log(encodedSamples);
+    t.assert.equal(encodedSamples, 168);
 });
 
 test('encoder opus bad arg', async () => {
@@ -120,8 +69,8 @@ test('encoder opus encoding', async () => {
         frameSizeInBytes
     );
     using dec = new opus.Decoder(runtime, 48000, 1, frameSizeInSamples);
-    using alsaPlayer = aplay({ sampleRate: 48000, channels: 1 });
-    using pcm = arecord({
+    using alsaPlayer = alsaPlay({ sampleRate: 48000, channels: 1 });
+    using pcm = alsaRecord({
         sampleRate: 48000,
         channels: 1,
         duration: 4,
@@ -160,6 +109,7 @@ test('encoder opus encoding', async () => {
         );
     }
     await stream.promises.finished(pcm.stdout);
+    await stream.promises.finished(alsaPlayer.stdin.end());
 });
 
 test('encoder opus bitrate', async (t) => {
@@ -181,14 +131,14 @@ test('encoder opus bitrate', async (t) => {
     t.assert.equal(enc.getApplication(), opus.constants.OPUS_APPLICATION_VOIP);
     assert.strict.ok(enc.setBitrate(16000));
     t.assert.equal(enc.getBitrate(), 16000);
-    using pcm = arecord({
+    using pcm = alsaRecord({
         sampleRate: 48000,
         channels: 1,
         duration: 4,
         bufferSize: frameSizeInBytes
     });
     using dec = new opus.Decoder(runtime, 48000, 1, frameSizeInSamples);
-    using alsaPlayer = aplay({ sampleRate: 48000, channels: 1 });
+    using alsaPlayer = alsaPlay({ sampleRate: 48000, channels: 1 });
     const ringBuffer = new RingBufferF32(frameSizeInSamples);
     for await (const chunk of pcm.stdout) {
         assert.strict.ok(Buffer.isBuffer(chunk));
@@ -222,4 +172,5 @@ test('encoder opus bitrate', async (t) => {
         );
     }
     await stream.promises.finished(pcm.stdout);
+    await stream.promises.finished(alsaPlayer.stdin.end());
 });

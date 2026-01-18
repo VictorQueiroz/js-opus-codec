@@ -3,6 +3,6 @@
     "compilerOptions": {
         "types": ["node"]
     },
-    "include": ["index.ts"],
+    "include": ["index.ts", "alsa-tools.ts"],
     "references": [{ "path": "../runtime" }, { "path": "../opus" }]
 }

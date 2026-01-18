@@ -29,7 +29,6 @@ export const opusGettersAndSetters = new Map([
     ['OPUS_GET_EXPERT_FRAME_DURATION', { arguments: ['x'] }],
     ['OPUS_SET_PREDICTION_DISABLED', { arguments: ['x'] }],
     ['OPUS_GET_PREDICTION_DISABLED', { arguments: ['x'] }],
-    // ['OPUS_RESET_STATE', { arguments: ['x'] }],
     ['OPUS_GET_BANDWIDTH', { arguments: ['x'] }],
     ['OPUS_GET_SAMPLE_RATE', { arguments: ['x'] }],
     ['OPUS_SET_PHASE_INVERSION_DISABLED', { arguments: ['x'] }],

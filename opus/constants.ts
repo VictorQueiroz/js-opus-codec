@@ -6,7 +6,7 @@ const constants = {
     'OPUS_INVALID_PACKET': -4,
     'OPUS_UNIMPLEMENTED': -5,
     'OPUS_INVALID_STATE': -6,
-    '    OPUS_ALLOC_FAIL': -7,
+    'OPUS_ALLOC_FAIL': -7,
     'OPUS_AUTO': -1000,
     'OPUS_BITRATE_MAX': -1,
     'OPUS_APPLICATION_VOIP': 2048,

@@ -11,6 +11,7 @@
         "generateWorkerActions.ts",
         "generateOpusGettersAndSettersClass.ts",
         "functionNameHelpers.ts",
-        "opusGettersAndSetters.ts"
+        "opusGettersAndSetters.ts",
+        "opusConstants.ts"
     ]
 }
