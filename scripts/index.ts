@@ -165,12 +165,7 @@ async function compile() {
         path.resolve(currentDir, '../actions'),
         '--force'
     ]);
-    await runCommand('npx', [
-        'webpack',
-        '--config',
-        path.resolve(currentDir, '../webpack/webpack.config.js'),
-        '--stats-error-details'
-    ]);
+
     await runCommand('npx', [
         'tsc',
         '--project',
@@ -178,6 +173,32 @@ async function compile() {
         '--outDir',
         outFolder
     ]);
+    for (const folder of ['opus', 'actions', 'runtime']) {
+        await runCommand('npx', [
+            'tsc',
+            '--project',
+            folder,
+            '--module',
+            'NodeNext',
+            '--outDir',
+            path.resolve(import.meta.dirname, '../es')
+        ]);
+    }
+    await runCommand('npx', [
+        'package-utilities',
+        '--set-es-paths',
+        '--es-folder',
+        'es',
+        '--include',
+        '{opus,runtime,actions}/**/*.js'
+    ]);
+    await runCommand('npx', [
+        'webpack',
+        '--config',
+        path.resolve(currentDir, '../webpack/webpack.config.js'),
+        '--stats-error-details'
+    ]);
+
     const { version, repository } = (await import('../package.json')).default;
     await fs.promises.writeFile(
         path.resolve(outFolder, 'package.json'),

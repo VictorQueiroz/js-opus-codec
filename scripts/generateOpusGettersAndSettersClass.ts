@@ -46,10 +46,8 @@ export async function generateOpusGettersAndSettersClass() {
                             `const result = this.#runtime.originalRuntime().${v[0].toLowerCase()}(this.#opusEncoderOffset,${varName});\n`
                         );
                         if (isGetter) {
-                        }
-                        if (isGetter) {
                             cs.write(
-                                `if(result != constants.OPUS_OK) throw new Error('Failed to set ${v[0]}');\n`
+                                `if(result != constants.OPUS_OK) throw new Error('Failed to get ${v[0]}');\n`
                             );
                             cs.write('return this.#value.value();\n');
                         } else {

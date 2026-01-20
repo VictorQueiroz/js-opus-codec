@@ -9,11 +9,13 @@ export interface IWorkerRequest<Data, Response> {
 
 export type CodecId = string;
 
+export interface IRequestResponseSuccess<T> {
+    requestId: RequestId;
+    value: T;
+}
+
 export type RequestResponse<T> =
-    | {
-          requestId: RequestId;
-          value: T;
-      }
+    | IRequestResponseSuccess<T>
     | {
           requestId: RequestId;
           failures: string[];
@@ -29,8 +31,10 @@ export interface ICreateEncoderOptions {
     pcmBufferLength: number;
 }
 
-export interface IOpusGetRequest
-    extends IWorkerRequest<OpusGetRequest, number> {
+export interface IOpusGetRequest extends IWorkerRequest<
+    OpusGetRequest,
+    number
+> {
     type: RequestType.OpusGetRequest;
 }
 
@@ -38,12 +42,14 @@ export function getFromEncoder(data: OpusGetRequest): IOpusGetRequest {
     return {
         type: RequestType.OpusGetRequest,
         data,
-        requestId: getRequestId(),
+        requestId: getRequestId()
     };
 }
 
-export interface IOpusSetRequest
-    extends IWorkerRequest<OpusSetRequest, boolean> {
+export interface IOpusSetRequest extends IWorkerRequest<
+    OpusSetRequest,
+    boolean
+> {
     type: RequestType.OpusSetRequest;
 }
 
@@ -51,12 +57,15 @@ export function setToEncoder(data: OpusSetRequest): IOpusSetRequest {
     return {
         type: RequestType.OpusSetRequest,
         data,
-        requestId: getRequestId(),
+        requestId: getRequestId()
     };
 }
 
-export interface ICreateEncoder
-    extends IWorkerRequest<ICreateEncoderOptions, CodecId> {
+export interface ICreateEncoder extends IWorkerRequest<
+    ICreateEncoderOptions,
+    CodecId
+> {
+    encoderId: CodecId;
     type: RequestType.CreateEncoder;
 }
 
@@ -66,24 +75,28 @@ export interface ICreateDecoderOptions {
     frameSize: number;
 }
 
-export interface ICreateDecoder
-    extends IWorkerRequest<ICreateDecoderOptions, CodecId> {
+export interface ICreateDecoder extends IWorkerRequest<
+    ICreateDecoderOptions,
+    CodecId
+> {
+    decoderId: CodecId;
     type: RequestType.CreateDecoder;
 }
 
-export function createDecoder(
-    sampleRate: number,
-    channels: number,
-    frameSize: number
-): ICreateDecoder {
+export function createDecoder({
+    sampleRate,
+    channels,
+    frameSize
+}: ICreateDecoderOptions): ICreateDecoder {
     return {
         type: RequestType.CreateDecoder,
+        decoderId: generateCodecId(),
         data: {
             frameSize,
             sampleRate,
-            channels,
+            channels
         },
-        requestId: getRequestId(),
+        requestId: getRequestId()
     };
 }
 
@@ -91,15 +104,18 @@ export interface IDestroyEncoderOptions {
     encoderId: CodecId;
 }
 
-export interface IDestroyEncoder extends IWorkerRequest<CodecId, null> {
+export interface IDestroyEncoder extends IWorkerRequest<
+    IDestroyEncoderOptions,
+    null
+> {
     type: RequestType.DestroyEncoder;
 }
 
-export function destroyEncoder(encoderId: CodecId): IDestroyEncoder {
+export function destroyEncoder(data: IDestroyEncoderOptions): IDestroyEncoder {
     return {
         type: RequestType.DestroyEncoder,
-        data: encoderId,
-        requestId: getRequestId(),
+        data,
+        requestId: getRequestId()
     };
 }
 
@@ -114,11 +130,13 @@ export enum RequestType {
     InitializeWorker,
     DestroyDecoder,
     OpusGetRequest,
-    OpusSetRequest,
+    OpusSetRequest
 }
 
-export interface IInitializeWorker
-    extends IWorkerRequest<IInitializeWorkerOptions, null> {
+export interface IInitializeWorker extends IWorkerRequest<
+    IInitializeWorkerOptions,
+    null
+> {
     type: RequestType.InitializeWorker;
 }
 
@@ -132,22 +150,26 @@ export function initializeWorker(
     return {
         requestId: getRequestId(),
         data,
-        type: RequestType.InitializeWorker,
+        type: RequestType.InitializeWorker
     };
 }
 
-export interface IDestroyDecoder
-    extends IWorkerRequest<{ decoderId: CodecId }, null> {
+export interface IDestroyDecoderOptions {
+    decoderId: CodecId;
+}
+
+export interface IDestroyDecoder extends IWorkerRequest<
+    IDestroyDecoderOptions,
+    null
+> {
     type: RequestType.DestroyDecoder;
 }
 
-export function destroyDecoder(decoderId: CodecId): IDestroyDecoder {
+export function destroyDecoder(data: IDestroyDecoderOptions): IDestroyDecoder {
     return {
         type: RequestType.DestroyDecoder,
-        data: {
-            decoderId,
-        },
-        requestId: getRequestId(),
+        data,
+        requestId: getRequestId()
     };
 }
 
@@ -160,8 +182,10 @@ export interface IDecodeFloatResult {
     decoded: ArrayBuffer;
 }
 
-export interface IDecodeFloat
-    extends IWorkerRequest<IDecodeFloatOptions, IDecodeFloatResult> {
+export interface IDecodeFloat extends IWorkerRequest<
+    IDecodeFloatOptions,
+    IDecodeFloatResult
+> {
     type: RequestType.DecodeFloat;
 }
 
@@ -170,7 +194,7 @@ export function decodeFloat(data: IDecodeFloatOptions): IDecodeFloat {
         type: RequestType.DecodeFloat,
         data,
         requestId: getRequestId(),
-        transfer: [data.encoded],
+        transfer: [data.encoded]
     };
 }
 
@@ -187,8 +211,10 @@ export interface IEncodeFloatResult {
     } | null;
 }
 
-export interface IEncodeFloat
-    extends IWorkerRequest<IEncodeFloatOptions, IEncodeFloatResult> {
+export interface IEncodeFloat extends IWorkerRequest<
+    IEncodeFloatOptions,
+    IEncodeFloatResult
+> {
     type: RequestType.EncodeFloat;
 }
 
@@ -204,9 +230,8 @@ export interface IEncodeFloatOptions {
     } | null;
 }
 
-export type RequestResponseType<T> = T extends IWorkerRequest<unknown, infer R>
-    ? R
-    : never;
+export type RequestResponseType<T> =
+    T extends IWorkerRequest<unknown, infer R> ? R : never;
 
 export type WorkerRequest =
     | IInitializeWorker
@@ -219,16 +244,24 @@ export type WorkerRequest =
     | IOpusGetRequest
     | IOpusSetRequest;
 
+function generateRandomId() {
+    return crypto.getRandomValues(new Uint32Array(4)).join('-');
+}
+
 function getRequestId() {
-    const ids = crypto.getRandomValues(new Int32Array(4));
-    return ids.join('-');
+    return generateRandomId();
+}
+
+function generateCodecId() {
+    return generateRandomId();
 }
 
 export function createEncoder(data: ICreateEncoderOptions): ICreateEncoder {
     return {
         data,
+        encoderId: generateCodecId(),
         requestId: getRequestId(),
-        type: RequestType.CreateEncoder,
+        type: RequestType.CreateEncoder
     };
 }
 
@@ -237,6 +270,6 @@ export function encodeFloat(data: IEncodeFloatOptions): IEncodeFloat {
         data,
         requestId: getRequestId(),
         type: RequestType.EncodeFloat,
-        transfer: data.input !== null ? [data.input.pcm.buffer] : [],
+        transfer: data.input !== null ? [data.input.pcm.buffer] : []
     };
 }
