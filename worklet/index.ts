@@ -1,33 +1,37 @@
-import { RingBufferF32 } from 'ringbud';
+import WorkletRingBuffer from './WorkletRingBuffer.js';
+import { LastKnownMemorizer } from 'cachecraft';
 
 type Channels = Float32Array[];
 
-function interleave(ch: Float32Array[]): Float32Array {
-    const C = ch.length;
-    if (C === 0) return new Float32Array(0);
-
-    const N = ch[0].length;
-    for (let c = 1; c < C; c++) {
-        if (ch[c].length !== N) throw new Error('Channel length mismatch');
-    }
-
-    const out = new Float32Array(N * C);
-    for (let i = 0, o = 0; i < N; i++) {
-        for (let c = 0; c < C; c++, o++) out[o] = ch[c][i];
-    }
-    return out;
+interface ICreateWorkletRingBufferOptions {
+    frameSize: number;
+    channelCount: number;
 }
 
 class DefaultAudioProcessor extends AudioWorkletProcessor {
-    #ringBuffer: RingBufferF32 | null = null;
+    #ringBuffer: LastKnownMemorizer<
+        ICreateWorkletRingBufferOptions,
+        WorkletRingBuffer
+    > = new LastKnownMemorizer(
+        ({ frameSize, channelCount }) =>
+            new WorkletRingBuffer(frameSize, channelCount),
+        (a, b) =>
+            a.frameSize === b.frameSize && a.channelCount === b.channelCount
+    );
     #shouldContinue = true;
 
     static get parameterDescriptors() {
         return [
             {
-                name: 'frameSize',
+                name: 'frameSize'
             },
-        ];
+            {
+                name: 'channelCount'
+            },
+            {
+                name: 'queueFrameCount'
+            }
+        ] as const;
     }
 
     public constructor() {
@@ -41,42 +45,46 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
         _: Channels[],
         parameters: Record<string, Float32Array>
     ) {
-        const frameSize = parameters['frameSize'][0];
-        if (!this.#ringBuffer) {
-            this.#ringBuffer = new RingBufferF32(frameSize);
-        }
-
-        if (!inputList.length) {
-            console.error('no data available in input list: %o', inputList);
-        }
-
-        const interleaved = new Array<Float32Array>();
+        const frameSize = this.#getNumber('frameSize', parameters);
+        const channelCount = this.#getNumber('channelCount', parameters);
+        const queueFrameCount = this.#getNumber('queueFrameCount', parameters);
+        const ringBuffer = this.#ringBuffer.get({ frameSize, channelCount });
 
         for (const channels of inputList) {
             if (!channels.length) {
                 continue;
             }
 
-            interleaved.push(interleave(channels));
+            ringBuffer.write(channels);
         }
 
-        this.#ringBuffer.write(interleave(interleaved));
-
-        const samples = this.#ringBuffer.read();
-
-        if (samples !== null) {
-            this.port.postMessage({
-                samples,
-            });
+        const remainingFrames = ringBuffer.remainingFrames();
+        if (remainingFrames.some((frames) => frames < queueFrameCount)) {
+            return this.#shouldContinue;
         }
+
+        let samples: Float32Array<ArrayBuffer>[] | null;
+        do {
+            samples = ringBuffer.read();
+
+            if (samples === null) {
+                continue;
+            }
+            this.port.postMessage(
+                {
+                    samples
+                },
+                samples.map((s) => s.buffer)
+            );
+        } while (samples !== null);
 
         if (!this.#shouldContinue) {
-            let samples: Float32Array | null;
+            let samples: Float32Array<ArrayBuffer>[] | null;
             do {
-                samples = this.#ringBuffer.drain();
+                samples = ringBuffer.drain();
                 if (samples !== null) {
                     this.port.postMessage({
-                        samples,
+                        samples
                     });
                 }
             } while (samples !== null);
@@ -89,6 +97,17 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
             this.#shouldContinue = false;
         }
     };
+
+    #getNumber(
+        key: 'frameSize' | 'channelCount' | 'queueFrameCount',
+        parameters: Record<string, Float32Array>
+    ): number {
+        const value = parameters[key];
+        if (!value || value.length === 0) {
+            throw new Error(`Parameter ${key} is missing`);
+        }
+        return value[0];
+    }
 }
 
 registerProcessor('default-audio-processor', DefaultAudioProcessor);
