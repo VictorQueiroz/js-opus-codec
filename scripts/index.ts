@@ -141,6 +141,12 @@ async function compile() {
     const clang = path.resolve(wasiSdkPath, 'bin/clang');
     const initialMemory = 32 * 1024 * 1024; // 32MB
     const stackSize = 2 * 1024 * 1024; // 2MB
+    const staticLibraries = [
+        path.resolve(buildFolder, 'opus/libopus.a'),
+        path.resolve(buildFolder, 'libRecTimeWebWorker.a'),
+        path.resolve(buildFolder, 'libopusenc-cmake/liblibopusenc.a'),
+        path.resolve(buildFolder, 'speexdsp-cmake/libspeexdsp.a')
+    ];
     await runCommand(clang, [
         '-v',
         '--target=wasm32-wasi',
@@ -153,8 +159,7 @@ async function compile() {
         '-Wl,--max-memory=2147483648', // 2GB max memory
         `-Wl,-z,stack-size=${stackSize}`, // 1MB stack size
         '-g3',
-        path.resolve(buildFolder, 'opus/libopus.a'),
-        path.resolve(buildFolder, 'libRecTimeWebWorker.a')
+        ...staticLibraries
     ]);
     await runCommand('npx', [
         'tsc',
