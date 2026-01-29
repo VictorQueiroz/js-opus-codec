@@ -137,6 +137,7 @@ async function compile() {
         // libopusenc
         'ope_encoder_create_pull',
         'ope_encoder_get_page',
+        'ope_encoder_write_float',
         'ope_encoder_drain',
         'ope_encoder_destroy',
         'ope_encoder_ctl',
