@@ -141,6 +141,11 @@ async function compile() {
         'ope_encoder_destroy',
         'ope_encoder_ctl',
         'ope_strerror',
+        'ope_comments_create',
+        'ope_comments_add',
+        'ope_comments_add',
+        'ope_comments_destroy',
+        // libopus
         'opus_decoder_create',
         'opus_decoder_destroy',
         'opus_decode_float',
