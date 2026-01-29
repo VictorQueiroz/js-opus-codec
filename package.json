@@ -44,6 +44,8 @@
     "./opus/index.js": "./es/opus/index.js",
     "./opus/constants.js": "./es/opus/constants.js",
     "./opus/OpusGettersAndSetters.js": "./es/opus/OpusGettersAndSetters.js",
+    "./opus/OggOpusEncoder.js": "./es/opus/OggOpusEncoder.js",
+    "./opus/OggOpusComments.js": "./es/opus/OggOpusComments.js",
     "./opus/Encoder.js": "./es/opus/Encoder.js",
     "./opus/Decoder.js": "./es/opus/Decoder.js",
     "./runtime/index.js": "./es/runtime/index.js",

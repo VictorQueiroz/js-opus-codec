@@ -16,6 +16,8 @@ import {
     WorkerRequest
 } from '../actions/actions.js';
 import Encoder from '../opus/Encoder.js';
+import OggOpusEncoder from '../opus/OggOpusEncoder.js';
+import OggOpusComments from '../opus/OggOpusComments.js';
 import Runtime from '../runtime/Runtime.js';
 import Decoder from '../opus/Decoder.js';
 import { getFromEncoder, setToEncoder } from './opus.js';

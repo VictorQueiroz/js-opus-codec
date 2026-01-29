@@ -1,4 +1,21 @@
 export const otherOpusConstants = new Map<string, number>([
+    // libopusenc
+    ['OPE_OK', 0],
+    /* Based on the relevant libopus code minus 10. */
+    ['OPE_BAD_ARG', -11],
+    ['OPE_INTERNAL_ERROR', -13],
+    ['OPE_UNIMPLEMENTED', -15],
+    ['OPE_ALLOC_FAIL', -17],
+
+    /* Specific to libopusenc. */
+    ['OPE_CANNOT_OPEN', -30],
+    ['OPE_TOO_LATE', -31],
+    ['OPE_INVALID_PICTURE', -32],
+    ['OPE_INVALID_ICON', -33],
+    ['OPE_WRITE_FAIL', -34],
+    ['OPE_CLOSE_FAIL', -35],
+
+    // libopus
     /** One or more invalid/out of range arguments @hideinitializer*/
     ['OPUS_OK', 0],
     /** Not enough bytes allocated in the buffer @hideinitializer*/

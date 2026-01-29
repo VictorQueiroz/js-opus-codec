@@ -8,6 +8,8 @@
         "Encoder.ts",
         "index.ts",
         "OpusGettersAndSetters.ts",
+        "OggOpusComments.ts",
+        "OggOpusEncoder.ts",
         "constants.ts"
     ],
     "references": [{ "path": "../runtime" }]

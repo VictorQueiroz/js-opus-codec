@@ -1,3 +1,23 @@
+export const opusEncGettersAndSetters = new Map([
+    /**@}*/
+    /**@}*/
+
+    /* These are the "raw" request values -- they should usually not be used. */
+    ['OPE_SET_DECISION_DELAY_REQUEST', 14000],
+    ['OPE_GET_DECISION_DELAY_REQUEST', 14001],
+    ['OPE_SET_MUXING_DELAY_REQUEST', 14002],
+    ['OPE_GET_MUXING_DELAY_REQUEST', 14003],
+    ['OPE_SET_COMMENT_PADDING_REQUEST', 14004],
+    ['OPE_GET_COMMENT_PADDING_REQUEST', 14005],
+    ['OPE_SET_SERIALNO_REQUEST', 14006],
+    ['OPE_GET_SERIALNO_REQUEST', 14007],
+    ['OPE_SET_PACKET_CALLBACK_REQUEST', 14008],
+    ['OPE_SET_HEADER_GAIN_REQUEST', 14010],
+    ['OPE_GET_HEADER_GAIN_REQUEST', 14011],
+    ['OPE_GET_NB_STREAMS_REQUEST', 14013],
+    ['OPE_GET_NB_COUPLED_STREAMS_REQUEST', 14015]
+]);
+
 export const opusGettersAndSetters = new Map([
     ['OPUS_SET_COMPLEXITY', { arguments: ['x'] }],
     ['OPUS_GET_COMPLEXITY', { arguments: ['x'] }],
