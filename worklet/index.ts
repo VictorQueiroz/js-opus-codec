@@ -55,7 +55,7 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
                 continue;
             }
 
-            ringBuffer.write(channels);
+            ringBuffer.write(channels.slice(0, channelCount));
         }
 
         const remainingFrames = ringBuffer.remainingFrames();

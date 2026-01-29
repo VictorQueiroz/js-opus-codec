@@ -73,26 +73,33 @@ async function compile() {
     assert.strict.ok(wasiSdkPath !== null);
 
     const buildFolder = path.resolve(currentDir, '../native/build');
+    const cmakeDefinitions = {
+        OPUS_STACK_PROTECTOR: 'OFF',
+        OPUS_DISABLE_INTRINSICS: 'OFF',
+        OPUS_FIXED_POINT: 'OFF',
+        OPUS_HARDENING: 'ON',
+        OPUS_BUILD_PROGRAMS: 'OFF',
+        OPUS_CUSTOM_MODES: 'OFF',
+        OPUS_FUZZING: 'OFF',
+        OPUS_CHECK_ASM: 'ON',
+        DISABLE_DEBUG_FLOAT: 'OFF',
+        OPUS_INSTALL_PKG_CONFIG_MODULE: 'OFF',
+        OPUS_INSTALL_CMAKE_CONFIG_MODULE: 'OFF',
+        OPUS_BUILD_SHARED_LIBRARY: 'OFF',
+        OPUS_BUILD_TESTING: 'OFF',
+        OPUS_ENABLE_FLOAT_API: 'ON',
+        OPUS_ASSERTIONS: 'OFF',
+        OPUS_FORTIFY_SOURCE: 'ON',
+        CMAKE_BUILD_TYPE: 'Release'
+    };
     await runCommand(
         'cmake',
         [
             '-B',
             buildFolder,
-            '-DOPUS_STACK_PROTECTOR=0',
-            '-DOPUS_DISABLE_INTRINSICS=0',
-            '-DOPUS_FIXED_POINT=0',
-            '-DOPUS_HARDENING=1',
-            '-DOPUS_FUZZING=0',
-            '-DOPUS_CHECK_ASM=1',
-            '-DOPUS_INSTALL_PKG_CONFIG_MODULE=0',
-            '-DOPUS_INSTALL_CMAKE_CONFIG_MODULE=0',
-            '-DOPUS_BUILD_SHARED_LIBRARY=0',
-            '-DOPUS_BUILD_TESTING=0',
-            '-DOPUS_ENABLE_FLOAT_API=1',
-            '-DOPUS_ASSERTIONS=0',
-            '-DOPUS_FORTIFY_SOURCE=1',
-            '-DOPUS_BUILD_PROGRAMS=0',
-            '-DCMAKE_BUILD_TYPE=Release',
+            ...Object.entries(cmakeDefinitions).map(
+                ([key, value]) => `-D${key}=${value}`
+            ),
             '--toolchain',
             path.resolve(wasiSdkPath, 'share', 'cmake', 'wasi-sdk.cmake')
         ],
@@ -127,6 +134,13 @@ async function compile() {
         '__data_end',
         'malloc',
         'free',
+        // libopusenc
+        'ope_encoder_create_pull',
+        'ope_encoder_get_page',
+        'ope_encoder_drain',
+        'ope_encoder_destroy',
+        'ope_encoder_ctl',
+        'ope_strerror',
         'opus_decoder_create',
         'opus_decoder_destroy',
         'opus_decode_float',
@@ -144,7 +158,7 @@ async function compile() {
     const staticLibraries = [
         path.resolve(buildFolder, 'opus/libopus.a'),
         path.resolve(buildFolder, 'libRecTimeWebWorker.a'),
-        path.resolve(buildFolder, 'libopusenc-cmake/liblibopusenc.a'),
+        path.resolve(buildFolder, 'libopusenc-cmake/libopusenc.a'),
         path.resolve(buildFolder, 'speexdsp-cmake/libspeexdsp.a')
     ];
     await runCommand(clang, [

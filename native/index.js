@@ -1,10 +1,3 @@
-async function wasmNoop(returnValue) {
-    return (...args) => {
-        console.log(args);
-        return returnValue; // Success
-    };
-}
-
 async function getInstantiatedSource({ wasmFileHref, importObject }) {
     let pendingWebAssemblyInstantiateSource;
     if ('process' in globalThis && process.env['RUNTIME'] === 'nodejs') {
@@ -30,14 +23,21 @@ async function getInstantiatedSource({ wasmFileHref, importObject }) {
 }
 
 async function createModule({ wasmFileHref } = {}) {
-    const wasi_snapshot_preview1 = {};
+    const wasi_snapshot_preview1 = {
+        proc_exit: function (code) {
+            console.log('WASI proc_exit called with code:', code);
+            throw new Error(`WASI exit with code: ${code}`);
+        }
+    };
     for (const funcName of [
         'args_get',
         'args_sizes_get',
         'fd_close',
         'fd_seek',
         'fd_write',
-        'proc_exit'
+        'fd_fdstat_get',
+        'fd_prestat_get',
+        'fd_prestat_dir_name'
     ]) {
         wasi_snapshot_preview1[funcName] = function (args) {
             console.log('[%s] called with %o', funcName, args);
