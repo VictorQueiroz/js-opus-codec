@@ -1,5 +1,5 @@
-import { Runtime, Integer, ResourcesHolder, Buffer } from '../runtime';
-import { OpusGettersAndSetters } from './OpusGettersAndSetters';
+import { Runtime, Integer, ResourcesHolder, Buffer } from '../runtime/index.js';
+import { OpusGettersAndSetters } from './OpusGettersAndSetters.js';
 
 export default class Encoder extends OpusGettersAndSetters {
     readonly #error;
@@ -22,10 +22,13 @@ export default class Encoder extends OpusGettersAndSetters {
          */
         pcmBufferLength: number
     ) {
+        if (!outBufferLength) {
+            throw new Error('Output buffer length must be more than 0');
+        }
         const error = new Integer(runtime);
         const encoderId = runtime
             .originalRuntime()
-            ._opus_encoder_create(
+            .opus_encoder_create(
                 sampleRate,
                 channels,
                 application,
@@ -33,6 +36,7 @@ export default class Encoder extends OpusGettersAndSetters {
             );
 
         super(runtime, encoderId);
+
         this.#holder = new ResourcesHolder();
         this.#error = error;
         this.#runtime = runtime;
@@ -55,10 +59,8 @@ export default class Encoder extends OpusGettersAndSetters {
          */
         this.#encoder = encoderId;
         if (error.value() < 0) {
+            this.destroy();
             throw new Error('Failed to create encoder');
-        }
-        if (!outBufferLength) {
-            throw new Error('outBufferLength must be more than 0');
         }
     }
     public encoded() {
@@ -87,10 +89,9 @@ export default class Encoder extends OpusGettersAndSetters {
             .set(
                 new Uint8Array(value.buffer, value.byteOffset, value.byteLength)
             );
-
         const result = this.#runtime
             .originalRuntime()
-            ._opus_encode_float(
+            .opus_encode_float(
                 this.#encoder,
                 this.#pcm.offset(),
                 frameSize,
@@ -99,13 +100,17 @@ export default class Encoder extends OpusGettersAndSetters {
             );
 
         if (result < 0) {
-            throw new Error(`Failed to encode float`);
+            throw new Error(`Failed to encode float: ${result}`);
         }
 
         return result;
     }
-    public destroy() {
+    public override destroy() {
+        super.destroy();
         this.#holder.destroy();
-        this.#runtime.originalRuntime()._opus_encoder_destroy(this.#encoder);
+        this.#runtime.originalRuntime().opus_encoder_destroy(this.#encoder);
+    }
+    public override [Symbol.dispose]() {
+        this.destroy();
     }
 }

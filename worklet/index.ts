@@ -1,40 +1,41 @@
-import { boundMethod } from 'autobind-decorator';
-import { RingBuffer } from 'opus-codec/opus';
+import WorkletRingBuffer from './WorkletRingBuffer.js';
+import { LastKnownMemorizer } from 'cachecraft';
 
 type Channels = Float32Array[];
 
-declare abstract class AudioWorkletProcessor {
-    port: MessagePort;
-    constructor(...args: unknown[]);
-    abstract process(
-        inputList: Channels[],
-        outputList: Channels[],
-        parameters: Record<string, Float32Array>
-    ): boolean;
+interface ICreateWorkletRingBufferOptions {
+    frameSize: number;
+    channelCount: number;
 }
 
-declare const registerProcessor: (
-    name: string,
-    value: new () => AudioWorkletProcessor
-) => void;
-
 class DefaultAudioProcessor extends AudioWorkletProcessor {
-    #ringBuffer: RingBuffer | null = null;
+    #ringBuffer: LastKnownMemorizer<
+        ICreateWorkletRingBufferOptions,
+        WorkletRingBuffer
+    > = new LastKnownMemorizer(
+        ({ frameSize, channelCount }) =>
+            new WorkletRingBuffer(frameSize, channelCount),
+        (a, b) =>
+            a.frameSize === b.frameSize && a.channelCount === b.channelCount
+    );
     #shouldContinue = true;
 
     static get parameterDescriptors() {
         return [
             {
-                name: 'frameSize',
+                name: 'frameSize'
             },
             {
-                name: 'debug',
+                name: 'channelCount'
             },
-        ];
+            {
+                name: 'queueFrameCount'
+            }
+        ] as const;
     }
 
-    public constructor(...args: unknown[]) {
-        super(args);
+    public constructor() {
+        super();
         this.port.addEventListener('message', this.onMessage);
         this.port.start();
     }
@@ -44,51 +45,46 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
         _: Channels[],
         parameters: Record<string, Float32Array>
     ) {
-        const frameSize = parameters['frameSize'][0];
-        const debug = parameters['debug'][0] ? true : false;
-        if (!this.#ringBuffer) {
-            this.#ringBuffer = new RingBuffer(frameSize);
-        }
+        const frameSize = this.#getNumber('frameSize', parameters);
+        const channelCount = this.#getNumber('channelCount', parameters);
+        const queueFrameCount = this.#getNumber('queueFrameCount', parameters);
+        const ringBuffer = this.#ringBuffer.get({ frameSize, channelCount });
 
-        if (!inputList.length) {
-            console.error('no data available in input list: %o', inputList);
-        }
-
-        for (const inputChannel of inputList) {
-            if (!inputChannel.length) {
-                console.error(
-                    'channel available, but no data: %o',
-                    inputChannel
-                );
-                break;
+        for (const channels of inputList) {
+            if (!channels.length) {
+                continue;
             }
 
-            this.#ringBuffer.write(inputChannel[0]);
-
-            const samples = this.#ringBuffer.read();
-
-            if (samples) {
-                if (debug) {
-                    console.log(
-                        'read %d samples out from ring buffer',
-                        samples.length
-                    );
-                }
-                this.port.postMessage({
-                    samples,
-                });
-            }
-            // for now, get just the first channel
-            break;
+            ringBuffer.write(channels.slice(0, channelCount));
         }
+
+        const remainingFrames = ringBuffer.remainingFrames();
+        if (remainingFrames.some((frames) => frames < queueFrameCount)) {
+            return this.#shouldContinue;
+        }
+
+        let samples: Float32Array<ArrayBuffer>[] | null;
+        do {
+            samples = ringBuffer.read();
+
+            if (samples === null) {
+                continue;
+            }
+            this.port.postMessage(
+                {
+                    samples
+                },
+                samples.map((s) => s.buffer)
+            );
+        } while (samples !== null);
 
         if (!this.#shouldContinue) {
-            let samples: Float32Array | null;
+            let samples: Float32Array<ArrayBuffer>[] | null;
             do {
-                samples = this.#ringBuffer.drain();
+                samples = ringBuffer.drain();
                 if (samples !== null) {
                     this.port.postMessage({
-                        samples,
+                        samples
                     });
                 }
             } while (samples !== null);
@@ -96,10 +92,21 @@ class DefaultAudioProcessor extends AudioWorkletProcessor {
 
         return this.#shouldContinue;
     }
-    @boundMethod private onMessage(e: MessageEvent) {
+    private onMessage = (e: MessageEvent) => {
         if (e.data && e.data.stop) {
             this.#shouldContinue = false;
         }
+    };
+
+    #getNumber(
+        key: 'frameSize' | 'channelCount' | 'queueFrameCount',
+        parameters: Record<string, Float32Array>
+    ): number {
+        const value = parameters[key];
+        if (!value || value.length === 0) {
+            throw new Error(`Parameter ${key} is missing`);
+        }
+        return value[0];
     }
 }
 

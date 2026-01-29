@@ -1,15 +1,15 @@
 {
     "extends": "../tsconfig.base.json",
     "compilerOptions": {
-        "types": [],
-        "lib": ["ESNext"]
+        "moduleResolution": "nodenext"
     },
     "include": [
         "Decoder.ts",
         "Encoder.ts",
-        "RingBuffer.ts",
         "index.ts",
         "OpusGettersAndSetters.ts",
+        "OggOpusComments.ts",
+        "OggOpusEncoder.ts",
         "constants.ts"
     ],
     "references": [{ "path": "../runtime" }]

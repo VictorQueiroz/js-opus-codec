@@ -1,9 +1,8 @@
 {
     "extends": "../tsconfig.base.json",
-    "include": ["index.ts"],
+    "include": ["index.ts", "WorkletRingBuffer.ts"],
     "compilerOptions": {
-        "lib": ["ESNext", "WebWorker"],
-        "types": [],
+        "types": ["audioworklet"],
         "noUncheckedIndexedAccess": false
     }
 }

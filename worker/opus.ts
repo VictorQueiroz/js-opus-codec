@@ -1,5 +1,5 @@
-import {OpusGetRequest,OpusRequest,OpusSetRequest} from '../actions/opus';
-import {Encoder} from 'opus-codec/opus';
+import {OpusGetRequest,OpusRequest,OpusSetRequest} from '../actions/opus.js';
+import {Encoder} from '../opus/index.js';
 export function setToEncoder(encoder: Encoder, request: OpusSetRequest){
     let result: boolean;
     switch(request.type) {

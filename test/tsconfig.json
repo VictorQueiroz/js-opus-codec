@@ -1,7 +1,15 @@
 {
-    "extends":"../tsconfig.base.json",
+    "extends": "../tsconfig.base.json",
+    "compilerOptions": {
+        "types": ["node"],
+        "lib": ["WebWorker", "ESNext"]
+    },
+    "include": ["index.ts", "alsa-tools.ts", "worker.test.ts"],
     "references": [
-        {"path":"../runtime"},
-        {"path":"../opus"}
+        { "path": "../runtime" },
+        { "path": "../opus" },
+        {
+            "path": "../actions"
+        }
     ]
 }

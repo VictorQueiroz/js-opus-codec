@@ -1,9 +1,17 @@
 {
     "extends": "../tsconfig.base.json",
     "compilerOptions": {
-        "lib": ["ESNext"],
-        "types": ["node"],
-        "moduleResolution": "node"
+        "types": ["node"]
     },
-    "include": ["index.ts", "../package.json"]
+    "include": [
+        "index.ts",
+        "../package.json",
+        "runCommand.ts",
+        "opusGettersAndSettersArgumentTypes.ts",
+        "generateWorkerActions.ts",
+        "generateOpusGettersAndSettersClass.ts",
+        "functionNameHelpers.ts",
+        "opusGettersAndSetters.ts",
+        "opusConstants.ts"
+    ]
 }

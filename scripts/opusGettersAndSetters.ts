@@ -1,0 +1,61 @@
+export const opusEncGettersAndSetters = new Map([
+    /**@}*/
+    /**@}*/
+
+    /* These are the "raw" request values -- they should usually not be used. */
+    ['OPE_SET_DECISION_DELAY_REQUEST', 14000],
+    ['OPE_GET_DECISION_DELAY_REQUEST', 14001],
+    ['OPE_SET_MUXING_DELAY_REQUEST', 14002],
+    ['OPE_GET_MUXING_DELAY_REQUEST', 14003],
+    ['OPE_SET_COMMENT_PADDING_REQUEST', 14004],
+    ['OPE_GET_COMMENT_PADDING_REQUEST', 14005],
+    ['OPE_SET_SERIALNO_REQUEST', 14006],
+    ['OPE_GET_SERIALNO_REQUEST', 14007],
+    ['OPE_SET_PACKET_CALLBACK_REQUEST', 14008],
+    ['OPE_SET_HEADER_GAIN_REQUEST', 14010],
+    ['OPE_GET_HEADER_GAIN_REQUEST', 14011],
+    ['OPE_GET_NB_STREAMS_REQUEST', 14013],
+    ['OPE_GET_NB_COUPLED_STREAMS_REQUEST', 14015]
+]);
+
+export const opusGettersAndSetters = new Map([
+    ['OPUS_SET_COMPLEXITY', { arguments: ['x'] }],
+    ['OPUS_GET_COMPLEXITY', { arguments: ['x'] }],
+    ['OPUS_SET_BITRATE', { arguments: ['x'] }],
+    ['OPUS_GET_BITRATE', { arguments: ['x'] }],
+    ['OPUS_SET_VBR', { arguments: ['x'] }],
+    ['OPUS_GET_VBR', { arguments: ['x'] }],
+    ['OPUS_SET_VBR_CONSTRAINT', { arguments: ['x'] }],
+    ['OPUS_GET_VBR_CONSTRAINT', { arguments: ['x'] }],
+    ['OPUS_SET_FORCE_CHANNELS', { arguments: ['x'] }],
+    ['OPUS_GET_FORCE_CHANNELS', { arguments: ['x'] }],
+    ['OPUS_SET_MAX_BANDWIDTH', { arguments: ['x'] }],
+    ['OPUS_GET_MAX_BANDWIDTH', { arguments: ['x'] }],
+    ['OPUS_SET_BANDWIDTH', { arguments: ['x'] }],
+    ['OPUS_SET_SIGNAL', { arguments: ['x'] }],
+    ['OPUS_GET_SIGNAL', { arguments: ['x'] }],
+    ['OPUS_SET_APPLICATION', { arguments: ['x'] }],
+    ['OPUS_GET_APPLICATION', { arguments: ['x'] }],
+    ['OPUS_GET_LOOKAHEAD', { arguments: ['x'] }],
+    ['OPUS_SET_INBAND_FEC', { arguments: ['x'] }],
+    ['OPUS_GET_INBAND_FEC', { arguments: ['x'] }],
+    ['OPUS_SET_PACKET_LOSS_PERC', { arguments: ['x'] }],
+    ['OPUS_GET_PACKET_LOSS_PERC', { arguments: ['x'] }],
+    ['OPUS_SET_DTX', { arguments: ['x'] }],
+    ['OPUS_GET_DTX', { arguments: ['x'] }],
+    ['OPUS_SET_LSB_DEPTH', { arguments: ['x'] }],
+    ['OPUS_GET_LSB_DEPTH', { arguments: ['x'] }],
+    ['OPUS_SET_EXPERT_FRAME_DURATION', { arguments: ['x'] }],
+    ['OPUS_GET_EXPERT_FRAME_DURATION', { arguments: ['x'] }],
+    ['OPUS_SET_PREDICTION_DISABLED', { arguments: ['x'] }],
+    ['OPUS_GET_PREDICTION_DISABLED', { arguments: ['x'] }],
+    ['OPUS_GET_BANDWIDTH', { arguments: ['x'] }],
+    ['OPUS_GET_SAMPLE_RATE', { arguments: ['x'] }],
+    ['OPUS_SET_PHASE_INVERSION_DISABLED', { arguments: ['x'] }],
+    ['OPUS_GET_PHASE_INVERSION_DISABLED', { arguments: ['x'] }],
+    ['OPUS_GET_IN_DTX', { arguments: ['x'] }],
+    ['OPUS_SET_GAIN', { arguments: ['x'] }],
+    ['OPUS_GET_GAIN', { arguments: ['x'] }],
+    ['OPUS_GET_LAST_PACKET_DURATION', { arguments: ['x'] }],
+    ['OPUS_GET_PITCH', { arguments: ['x'] }]
+]);
